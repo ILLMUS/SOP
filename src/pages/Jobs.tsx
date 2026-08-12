@@ -1,0 +1,150 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { STAGE_LABELS, STAGE_ORDER } from "@/lib/constants";
+import { Plus, Search, Loader2 } from "lucide-react";
+import type { Tables } from "@/integrations/supabase/types";
+
+type Job = Tables<"jobs">;
+
+export default function Jobs() {
+  const navigate = useNavigate();
+  const { hasRole } = useAuth();
+  const isSuperAdmin = hasRole("super_admin");
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    const fetchJobs = async () => {
+      const { data } = await supabase
+        .from("jobs")
+        .select("*")
+        .order("created_at", { ascending: false });
+      setJobs(data || []);
+      setLoading(false);
+    };
+    fetchJobs();
+  }, []);
+
+  const filtered = jobs.filter(
+    (j) =>
+      j.client_name.toLowerCase().includes(search.toLowerCase()) ||
+      j.job_number.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const statusColor = (status: string) => {
+    switch (status) {
+      case "active": return "bg-accent/10 text-accent border-accent/20";
+      case "completed": return "bg-success/10 text-success border-success/20";
+      case "on_hold": return "bg-warning/10 text-warning border-warning/20";
+      case "cancelled": return "bg-destructive/10 text-destructive border-destructive/20";
+      default: return "";
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-accent" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="font-heading text-2xl font-bold">Jobs</h1>
+        {isSuperAdmin && (
+          <Button
+            onClick={() => navigate("/jobs/new")}
+            className="bg-accent text-accent-foreground hover:bg-accent/90"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            New Job
+          </Button>
+        )}
+      </div>
+
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="Search by client or job number..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-9"
+        />
+      </div>
+
+      <Card>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-muted/50">
+                  <th className="px-4 py-3 text-left font-medium">Job #</th>
+                  <th className="px-4 py-3 text-left font-medium">Client</th>
+                  <th className="px-4 py-3 text-left font-medium">Service</th>
+                  <th className="px-4 py-3 text-left font-medium">Current Stage</th>
+                  <th className="px-4 py-3 text-left font-medium">Status</th>
+                  <th className="px-4 py-3 text-left font-medium">Progress</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                      No jobs found.
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((job) => {
+                    const stageIdx = STAGE_ORDER.indexOf(job.current_stage);
+                    const pct = Math.round(((stageIdx + 1) / STAGE_ORDER.length) * 100);
+                    return (
+                      <tr
+                        key={job.id}
+                        onClick={() => navigate(`/jobs/${job.id}`)}
+                        className="cursor-pointer border-b transition-colors hover:bg-muted/50"
+                      >
+                        <td className="px-4 py-3 font-mono text-xs">{job.job_number}</td>
+                        <td className="px-4 py-3 font-medium">{job.client_name}</td>
+                        <td className="px-4 py-3 text-muted-foreground">{job.service_type || "—"}</td>
+                        <td className="px-4 py-3">
+                          <Badge variant="outline" className="text-xs">
+                            {STAGE_LABELS[job.current_stage]}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-3">
+                          <Badge className={statusColor(job.status)} variant="outline">
+                            {job.status}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted">
+                              <div
+                                className="h-full rounded-full bg-accent"
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                            <span className="text-xs text-muted-foreground">{pct}%</span>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
