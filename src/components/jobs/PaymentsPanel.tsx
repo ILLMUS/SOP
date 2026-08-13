@@ -150,7 +150,7 @@ export default function PaymentsPanel({ jobId, quotedAmount }: { jobId: string; 
                 <div key={p.id} className="flex items-center justify-between rounded border border-border p-2 text-sm">
                   <div>
                     <p className="font-medium capitalize">
-                      {p.payment_type} — R{Number(p.amount).toFixed(2)}
+                      {p.payment_type} — E{Number(p.amount).toFixed(2)}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {p.paid_at} • {p.method || "—"}{p.reference ? ` • ${p.reference}` : ""}
@@ -165,12 +165,12 @@ export default function PaymentsPanel({ jobId, quotedAmount }: { jobId: string; 
               ))}
             </div>
             <div className="space-y-1 border-t border-border pt-2 text-sm">
-              <div className="flex justify-between"><span>Net received</span><span className="font-medium">R{net.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span>Net received</span><span className="font-medium">E{net.toFixed(2)}</span></div>
               {quotedAmount != null && (
                 <div className="flex justify-between">
                   <span>Outstanding (vs quote)</span>
                   <span className={`font-medium ${(balance ?? 0) > 0 ? "text-destructive" : "text-success"}`}>
-                    R{(balance ?? 0).toFixed(2)}
+                    E{(balance ?? 0).toFixed(2)}
                   </span>
                 </div>
               )}

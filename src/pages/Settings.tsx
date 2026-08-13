@@ -1,7 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SlaDefaultsEditor from "@/components/admin/SlaDefaultsEditor";
-import ApiKeyManager from "@/components/admin/ApiKeyManager";
 import NotificationPreferences from "@/components/settings/NotificationPreferences";
 import NotificationTestPanel from "@/components/settings/NotificationTestPanel";
 import ProfileSettings from "@/components/settings/ProfileSettings";
@@ -46,8 +45,11 @@ export default function Settings() {
         </TabsContent>
         {showAdmin && (
           <TabsContent value="admin" className="mt-4 space-y-6">
-            {isSuperAdmin && <ApiKeyManager />}
             {isAdmin && <SlaDefaultsEditor />}
+            <p className="text-sm text-muted-foreground">
+              External connections and API keys have moved to{" "}
+              <a href="/admin/integrations" className="underline">Administration → Integrations</a>.
+            </p>
           </TabsContent>
         )}
       </Tabs>

@@ -25,7 +25,7 @@ export default function CostingForm({ formData, onChange, readOnly }: StageFormP
       <div className="rounded border border-accent/30 bg-accent/5 p-3">
         <p className="text-sm font-medium text-muted-foreground">Total Estimated Cost</p>
         <p className="font-heading text-xl font-bold text-accent">
-          R {(
+          E {(
             parseFloat(formData.material_cost || "0") +
             parseFloat(formData.labour_cost || "0") +
             parseFloat(formData.transport_cost || "0") +

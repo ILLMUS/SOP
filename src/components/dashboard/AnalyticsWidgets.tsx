@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Timer, DollarSign, Loader2 } from "lucide-react";
 import { STAGE_LABELS, STAGE_ORDER } from "@/lib/constants";
 import type { Database } from "@/integrations/supabase/types";
+import { formatCurrency } from "@/lib/currency";
 
 type JobStage = Database["public"]["Enums"]["job_stage"];
 
@@ -112,7 +113,7 @@ export default function AnalyticsWidgets() {
     (Object.keys(data.avgStageHours).length || 1);
 
   const fmtMoney = (n: number) =>
-    new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR", maximumFractionDigits: 0 }).format(n);
+    formatCurrency(n);
   const fmtHrs = (h: number) =>
     h >= 24 ? `${(h / 24).toFixed(1)}d` : `${h.toFixed(1)}h`;
 

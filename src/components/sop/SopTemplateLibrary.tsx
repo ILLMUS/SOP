@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,7 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { BookOpen, ChevronRight, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { SOP_LIBRARY, type LibraryTemplate } from "@/lib/sopLibrary";
-import { slugifyKey } from "@/lib/sopFields";
+import { installLibraryTemplate } from "@/lib/sopInstall";
 
 interface Props {
   orgId: string | null;
@@ -31,84 +30,12 @@ export default function SopTemplateLibrary({ orgId, userId, onInstalled }: Props
     if (!orgId) return;
     setInstalling(tpl.key);
     try {
-      // 1. Make sure every role in the template exists for this org
-      const { data: existingRoles } = await supabase
-        .from("org_roles")
-        .select("id, name")
-        .eq("org_id", orgId);
-      const roleMap = new Map<string, string>();
-      (existingRoles || []).forEach((r) => roleMap.set(r.name.toLowerCase(), r.id));
-
-      const missing = tpl.roles.filter((r) => !roleMap.has(r.toLowerCase()));
-      if (missing.length) {
-        const { data: created, error } = await supabase
-          .from("org_roles")
-          .insert(missing.map((name) => ({ org_id: orgId, name, is_admin: false })))
-          .select("id, name");
-        if (error) throw error;
-        (created || []).forEach((r) => roleMap.set(r.name.toLowerCase(), r.id));
-      }
-
-      // 2. Create the workflow
-      const { data: template, error: tErr } = await supabase
-        .from("sop_templates")
-        .insert({
-          org_id: orgId,
-          name: tpl.name,
-          description: tpl.summary,
-          industry: tpl.niche,
-          created_by: userId ?? null,
-          is_active: false,
-        })
-        .select()
-        .single();
-      if (tErr) throw tErr;
-
-      // 3. Stages
-      const { data: stages, error: sErr } = await supabase
-        .from("sop_stages")
-        .insert(
-          tpl.stages.map((s, i) => ({
-            org_id: orgId,
-            template_id: template.id,
-            position: i,
-            name: s.name,
-            description: s.description,
-            sla_hours: s.slaHours,
-            requires_approval: s.requiresApproval ?? false,
-            primary_role_id: roleMap.get(s.role.toLowerCase()) ?? null,
-            secondary_role_id: s.backupRole ? roleMap.get(s.backupRole.toLowerCase()) ?? null : null,
-          }))
-        )
-        .select("id, position");
-      if (sErr) throw sErr;
-
-      // 4. Fields per stage
-      const byPosition = new Map<number, string>();
-      (stages || []).forEach((s: any) => byPosition.set(s.position, s.id));
-      const fieldRows = tpl.stages.flatMap((s, i) =>
-        s.fields.map((f, j) => ({
-          org_id: orgId,
-          stage_id: byPosition.get(i)!,
-          position: j,
-          field_key: `${slugifyKey(f.label)}_${i}${j}`,
-          label: f.label,
-          field_type: f.type,
-          required: f.required ?? false,
-          help_text: f.help ?? null,
-          options: f.options ?? [],
-        }))
-      );
-      if (fieldRows.length) {
-        const { error: fErr } = await supabase.from("sop_fields").insert(fieldRows);
-        if (fErr) throw fErr;
-      }
-
+      const templateId = await installLibraryTemplate(orgId, userId, tpl);
       toast.success(`"${tpl.name}" added — edit anything you like`);
       setOpen(false);
-      onInstalled(template.id);
-    } catch (e: any) {
-      toast.error(e.message || "Could not add that template");
+      onInstalled(templateId);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not add that template");
     } finally {
       setInstalling(null);
     }

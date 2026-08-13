@@ -114,7 +114,7 @@ export default function VariationsPanel({ jobId }: { jobId: string }) {
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
                     <p className="text-sm font-medium">
-                      Variation #{v.variation_number} — R{Number(v.amount).toFixed(2)}
+                      Variation #{v.variation_number} — E{Number(v.amount).toFixed(2)}
                     </p>
                     <p className="text-sm text-muted-foreground">{v.description}</p>
                     {v.rejection_reason && (
@@ -148,7 +148,7 @@ export default function VariationsPanel({ jobId }: { jobId: string }) {
               </div>
             ))}
             <div className="border-t border-border pt-2 text-sm font-medium">
-              Approved variations total: R{total.toFixed(2)}
+              Approved variations total: E{total.toFixed(2)}
             </div>
           </div>
         )}

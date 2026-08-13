@@ -14,10 +14,18 @@ export default {
     },
     extend: {
       fontFamily: {
-        heading: ['"Roboto Condensed"', 'sans-serif'],
+        heading: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
         body: ['Inter', 'sans-serif'],
       },
       colors: {
+        chart: {
+          1: "hsl(var(--chart-1))",
+          2: "hsl(var(--chart-2))",
+          3: "hsl(var(--chart-3))",
+          4: "hsl(var(--chart-4))",
+          5: "hsl(var(--chart-5))",
+          6: "hsl(var(--chart-6))",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

@@ -68,7 +68,7 @@ export default function ProfileSettings() {
             id="phone"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            placeholder="+27 ..."
+            placeholder="+268 ..."
           />
         </div>
         <div className="space-y-1">

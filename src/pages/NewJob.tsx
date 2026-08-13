@@ -135,6 +135,7 @@ export default function NewJob() {
                 <Label htmlFor="client_phone">Phone</Label>
                 <Input
                   id="client_phone"
+                  placeholder="+268 ..."
                   value={form.client_phone}
                   onChange={(e) => setForm((f) => ({ ...f, client_phone: e.target.value }))}
                 />

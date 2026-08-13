@@ -447,4 +447,183 @@ export const SOP_LIBRARY: LibraryTemplate[] = [
       ] },
     ],
   },
+  {
+    key: "client_onboarding",
+    name: "Client Onboarding",
+    niche: "Universal / Any business",
+    summary: "Turn a signed client into a fully set-up, kicked-off account.",
+    roles: ["Account Manager", "Operations", "Finance"],
+    stages: [
+      { name: "Welcome & Intake", description: "Send the welcome pack and capture the client's core details.", role: "Account Manager", slaHours: 24, fields: [
+        { label: "Primary contact name", type: "text", required: true },
+        { label: "Contact email", type: "email", required: true },
+        { label: "Contact phone", type: "tel" },
+        { label: "What the client bought", type: "textarea", required: true },
+      ] },
+      { name: "Paperwork & Compliance", description: "Collect signed agreement, billing and any compliance documents.", role: "Finance", slaHours: 72, requiresApproval: true, fields: [
+        { label: "Signed agreement", type: "file", required: true },
+        { label: "Billing details captured", type: "checkbox", required: true },
+        { label: "Compliance documents", type: "file" },
+      ] },
+      { name: "Account Setup", description: "Create systems access, folders and internal records.", role: "Operations", slaHours: 48, fields: [
+        { label: "Systems provisioned", type: "checkbox", required: true },
+        { label: "Setup notes", type: "textarea" },
+      ] },
+      { name: "Kick-off Meeting", description: "Align on scope, timelines and communication rhythm.", role: "Account Manager", slaHours: 120, requiresApproval: true, fields: [
+        { label: "Meeting date", type: "date", required: true },
+        { label: "Agreed scope summary", type: "textarea", required: true },
+        { label: "Meeting notes / recording", type: "file" },
+      ] },
+      { name: "Handover to Delivery", description: "Confirm the delivery team has everything to start.", role: "Operations", slaHours: 48, fields: [
+        { label: "Delivery owner", type: "text", required: true },
+        { label: "Client confirmed ready", type: "checkbox", required: true },
+      ] },
+    ],
+  },
+  {
+    key: "website_development",
+    name: "Website Development",
+    niche: "Digital / Agency",
+    summary: "Brief to launch with design sign-off, build, QA and handover.",
+    roles: ["Account Manager", "Designer", "Developer", "QA"],
+    stages: [
+      { name: "Brief & Discovery", description: "Capture goals, audience, pages and references.", role: "Account Manager", slaHours: 48, fields: [
+        { label: "Project goals", type: "textarea", required: true },
+        { label: "Page list", type: "textarea", required: true },
+        { label: "Reference sites", type: "textarea" },
+        { label: "Brand assets", type: "file" },
+      ] },
+      { name: "Design", description: "Produce wireframes and visual design for review.", role: "Designer", slaHours: 120, fields: [
+        { label: "Design files / link", type: "text", required: true },
+        { label: "Design preview", type: "file" },
+      ] },
+      { name: "Design Approval", description: "Client signs off the design before build starts.", role: "Account Manager", slaHours: 72, requiresApproval: true, fields: [
+        { label: "Client approved", type: "checkbox", required: true },
+        { label: "Approval evidence", type: "file" },
+        { label: "Change requests", type: "textarea" },
+      ] },
+      { name: "Build", description: "Develop pages, integrations and content.", role: "Developer", slaHours: 240, fields: [
+        { label: "Staging URL", type: "text", required: true },
+        { label: "Build notes", type: "textarea" },
+      ] },
+      { name: "QA & Testing", description: "Cross-device, performance and link testing.", role: "QA", slaHours: 72, requiresApproval: true, fields: [
+        { label: "All checks passed", type: "checkbox", required: true },
+        { label: "Issues found", type: "textarea" },
+      ] },
+      { name: "Launch & Handover", description: "Go live, hand over access and training.", role: "Developer", backupRole: "Account Manager", slaHours: 48, fields: [
+        { label: "Live URL", type: "text", required: true },
+        { label: "Credentials handed over", type: "checkbox", required: true },
+        { label: "Handover document", type: "file" },
+      ] },
+    ],
+  },
+  {
+    key: "property_maintenance",
+    name: "Property Maintenance Request",
+    niche: "Property / Facilities",
+    summary: "Tenant request to verified repair with cost approval and sign-off.",
+    roles: ["Property Manager", "Technician", "Finance"],
+    stages: [
+      { name: "Request Logged", description: "Capture the fault, unit and urgency.", role: "Property Manager", slaHours: 8, fields: [
+        { label: "Property / unit", type: "text", required: true },
+        { label: "Fault description", type: "textarea", required: true },
+        { label: "Urgency", type: "select", required: true, options: ["Emergency", "High", "Normal", "Low"] },
+        { label: "Photos of fault", type: "file" },
+      ] },
+      { name: "Inspection", description: "Attend site and diagnose the fault.", role: "Technician", slaHours: 48, fields: [
+        { label: "Diagnosis", type: "textarea", required: true },
+        { label: "Parts required", type: "textarea" },
+        { label: "Inspection photos", type: "file" },
+      ] },
+      { name: "Cost Approval", description: "Approve the repair cost before work starts.", role: "Finance", backupRole: "Property Manager", slaHours: 48, requiresApproval: true, fields: [
+        { label: "Estimated cost", type: "currency", required: true },
+        { label: "Approved", type: "checkbox", required: true },
+      ] },
+      { name: "Repair", description: "Carry out the repair and record what was done.", role: "Technician", slaHours: 96, fields: [
+        { label: "Work performed", type: "textarea", required: true },
+        { label: "Completion photos", type: "file", required: true },
+        { label: "Date completed", type: "date", required: true },
+      ] },
+      { name: "Verification & Close", description: "Confirm with the tenant and close the request.", role: "Property Manager", slaHours: 48, requiresApproval: true, fields: [
+        { label: "Tenant satisfied", type: "checkbox", required: true },
+        { label: "Final cost", type: "currency" },
+        { label: "Closing notes", type: "textarea" },
+      ] },
+    ],
+  },
+  {
+    key: "equipment_repair",
+    name: "Equipment Repair",
+    niche: "Service / Workshop",
+    summary: "Intake to return with diagnosis, quote approval, repair and QC.",
+    roles: ["Service Desk", "Technician", "Workshop Manager"],
+    stages: [
+      { name: "Intake", description: "Book the equipment in and record its condition.", role: "Service Desk", slaHours: 8, fields: [
+        { label: "Equipment / serial number", type: "text", required: true },
+        { label: "Reported fault", type: "textarea", required: true },
+        { label: "Condition on arrival", type: "file" },
+      ] },
+      { name: "Diagnosis", description: "Test and identify the root cause.", role: "Technician", slaHours: 48, fields: [
+        { label: "Root cause", type: "textarea", required: true },
+        { label: "Parts needed", type: "textarea" },
+        { label: "Repairable", type: "select", required: true, options: ["Repairable", "Beyond economic repair"] },
+      ] },
+      { name: "Quote Approval", description: "Client approves the repair cost.", role: "Service Desk", slaHours: 72, requiresApproval: true, fields: [
+        { label: "Quoted amount", type: "currency", required: true },
+        { label: "Client approved", type: "checkbox", required: true },
+        { label: "Approval evidence", type: "file" },
+      ] },
+      { name: "Repair Work", description: "Perform the repair and log parts used.", role: "Technician", slaHours: 120, fields: [
+        { label: "Work performed", type: "textarea", required: true },
+        { label: "Parts used", type: "textarea" },
+        { label: "Labour hours", type: "number" },
+      ] },
+      { name: "Quality Check", description: "Test the repaired unit before release.", role: "Workshop Manager", slaHours: 24, requiresApproval: true, fields: [
+        { label: "Tests passed", type: "checkbox", required: true },
+        { label: "Test notes", type: "textarea" },
+      ] },
+      { name: "Return & Invoice", description: "Release the equipment and invoice the client.", role: "Service Desk", slaHours: 48, fields: [
+        { label: "Collected by", type: "text", required: true },
+        { label: "Invoice amount", type: "currency", required: true },
+        { label: "Signed release", type: "file" },
+      ] },
+    ],
+  },
+  {
+    key: "marketing_campaign",
+    name: "Marketing Campaign",
+    niche: "Marketing",
+    summary: "Brief to reporting with creative approval, launch and results.",
+    roles: ["Marketing Lead", "Creative", "Media Buyer"],
+    stages: [
+      { name: "Campaign Brief", description: "Define objective, audience, budget and dates.", role: "Marketing Lead", slaHours: 48, fields: [
+        { label: "Objective", type: "textarea", required: true },
+        { label: "Target audience", type: "textarea", required: true },
+        { label: "Budget", type: "currency", required: true },
+        { label: "Launch date", type: "date", required: true },
+      ] },
+      { name: "Creative Production", description: "Produce copy, visuals and assets.", role: "Creative", slaHours: 120, fields: [
+        { label: "Creative assets", type: "file", required: true },
+        { label: "Key message", type: "textarea", required: true },
+      ] },
+      { name: "Creative Approval", description: "Sign off creative before spend starts.", role: "Marketing Lead", slaHours: 48, requiresApproval: true, fields: [
+        { label: "Approved", type: "checkbox", required: true },
+        { label: "Feedback", type: "textarea" },
+      ] },
+      { name: "Launch", description: "Set live across the chosen channels.", role: "Media Buyer", slaHours: 24, fields: [
+        { label: "Channels", type: "textarea", required: true },
+        { label: "Live date", type: "date", required: true },
+      ] },
+      { name: "Optimisation", description: "Monitor performance and adjust.", role: "Media Buyer", slaHours: 336, fields: [
+        { label: "Spend to date", type: "currency" },
+        { label: "Adjustments made", type: "textarea" },
+      ] },
+      { name: "Results Report", description: "Report outcomes against the objective.", role: "Marketing Lead", slaHours: 72, requiresApproval: true, fields: [
+        { label: "Leads / conversions", type: "number", required: true },
+        { label: "Cost per result", type: "currency" },
+        { label: "Report file", type: "file" },
+        { label: "Lessons learned", type: "textarea" },
+      ] },
+    ],
+  },
 ];

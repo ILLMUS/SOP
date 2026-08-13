@@ -14,6 +14,178 @@ export type Database = {
   }
   public: {
     Tables: {
+      accounts: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          industry: string | null
+          lifecycle_stage: Database["public"]["Enums"]["lifecycle_stage"]
+          location: string | null
+          name: string
+          notes: string | null
+          org_id: string
+          owner_id: string | null
+          phone: string | null
+          source: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          industry?: string | null
+          lifecycle_stage?: Database["public"]["Enums"]["lifecycle_stage"]
+          location?: string | null
+          name: string
+          notes?: string | null
+          org_id: string
+          owner_id?: string | null
+          phone?: string | null
+          source?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          industry?: string | null
+          lifecycle_stage?: Database["public"]["Enums"]["lifecycle_stage"]
+          location?: string | null
+          name?: string
+          notes?: string | null
+          org_id?: string
+          owner_id?: string | null
+          phone?: string | null
+          source?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accounts_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      activities: {
+        Row: {
+          account_id: string | null
+          assigned_to: string | null
+          body: string | null
+          completed_at: string | null
+          contact_id: string | null
+          created_at: string
+          created_by: string | null
+          deal_id: string | null
+          due_at: string | null
+          id: string
+          job_id: string | null
+          lead_id: string | null
+          opportunity_id: string | null
+          org_id: string
+          subject: string
+          type: Database["public"]["Enums"]["activity_type"]
+          updated_at: string
+        }
+        Insert: {
+          account_id?: string | null
+          assigned_to?: string | null
+          body?: string | null
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deal_id?: string | null
+          due_at?: string | null
+          id?: string
+          job_id?: string | null
+          lead_id?: string | null
+          opportunity_id?: string | null
+          org_id: string
+          subject: string
+          type?: Database["public"]["Enums"]["activity_type"]
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string | null
+          assigned_to?: string | null
+          body?: string | null
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deal_id?: string | null
+          due_at?: string | null
+          id?: string
+          job_id?: string | null
+          lead_id?: string | null
+          opportunity_id?: string | null
+          org_id?: string
+          subject?: string
+          type?: Database["public"]["Enums"]["activity_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activities_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       api_keys: {
         Row: {
           created_at: string
@@ -127,6 +299,352 @@ export type Database = {
           },
         ]
       }
+      contacts: {
+        Row: {
+          account_id: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          full_name: string
+          id: string
+          is_primary: boolean
+          job_title: string | null
+          notes: string | null
+          org_id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          full_name: string
+          id?: string
+          is_primary?: boolean
+          job_title?: string | null
+          notes?: string | null
+          org_id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          full_name?: string
+          id?: string
+          is_primary?: boolean
+          job_title?: string | null
+          notes?: string | null
+          org_id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contacts_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contacts_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deals: {
+        Row: {
+          account_id: string | null
+          closed_at: string | null
+          contact_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          job_id: string | null
+          lost_reason: string | null
+          name: string
+          opportunity_id: string | null
+          org_id: string
+          owner_id: string | null
+          status: Database["public"]["Enums"]["deal_status"]
+          updated_at: string
+          value: number | null
+        }
+        Insert: {
+          account_id?: string | null
+          closed_at?: string | null
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          job_id?: string | null
+          lost_reason?: string | null
+          name: string
+          opportunity_id?: string | null
+          org_id: string
+          owner_id?: string | null
+          status?: Database["public"]["Enums"]["deal_status"]
+          updated_at?: string
+          value?: number | null
+        }
+        Update: {
+          account_id?: string | null
+          closed_at?: string | null
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          job_id?: string | null
+          lost_reason?: string | null
+          name?: string
+          opportunity_id?: string | null
+          org_id?: string
+          owner_id?: string | null
+          status?: Database["public"]["Enums"]["deal_status"]
+          updated_at?: string
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deals_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expenses: {
+        Row: {
+          account_id: string | null
+          amount: number
+          billable: boolean
+          category: string
+          created_at: string
+          currency: string
+          deal_id: string | null
+          description: string
+          id: string
+          job_id: string | null
+          method: string | null
+          notes: string | null
+          org_id: string
+          receipt_url: string | null
+          recorded_by: string
+          reference: string | null
+          spent_at: string
+          updated_at: string
+          vendor: string | null
+        }
+        Insert: {
+          account_id?: string | null
+          amount: number
+          billable?: boolean
+          category?: string
+          created_at?: string
+          currency?: string
+          deal_id?: string | null
+          description: string
+          id?: string
+          job_id?: string | null
+          method?: string | null
+          notes?: string | null
+          org_id: string
+          receipt_url?: string | null
+          recorded_by?: string
+          reference?: string | null
+          spent_at?: string
+          updated_at?: string
+          vendor?: string | null
+        }
+        Update: {
+          account_id?: string | null
+          amount?: number
+          billable?: boolean
+          category?: string
+          created_at?: string
+          currency?: string
+          deal_id?: string | null
+          description?: string
+          id?: string
+          job_id?: string | null
+          method?: string | null
+          notes?: string | null
+          org_id?: string
+          receipt_url?: string | null
+          recorded_by?: string
+          reference?: string | null
+          spent_at?: string
+          updated_at?: string
+          vendor?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finance_documents: {
+        Row: {
+          account_id: string | null
+          amount: number
+          client_name: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          deal_id: string | null
+          doc_type: string
+          document_url: string | null
+          due_date: string | null
+          external_id: string | null
+          id: string
+          issued_at: string
+          job_id: string | null
+          notes: string | null
+          org_id: string
+          reference: string
+          source: string
+          status: string
+          synced_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_id?: string | null
+          amount?: number
+          client_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          deal_id?: string | null
+          doc_type: string
+          document_url?: string | null
+          due_date?: string | null
+          external_id?: string | null
+          id?: string
+          issued_at?: string
+          job_id?: string | null
+          notes?: string | null
+          org_id: string
+          reference: string
+          source?: string
+          status?: string
+          synced_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string | null
+          amount?: number
+          client_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          deal_id?: string | null
+          doc_type?: string
+          document_url?: string | null
+          due_date?: string | null
+          external_id?: string | null
+          id?: string
+          issued_at?: string
+          job_id?: string | null
+          notes?: string | null
+          org_id?: string
+          reference?: string
+          source?: string
+          status?: string
+          synced_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_documents_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "finance_documents_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "finance_documents_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "finance_documents_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flight_logs: {
         Row: {
           battery_end: number | null
@@ -170,7 +688,15 @@ export type Database = {
           started_at?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "flight_logs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       job_payments: {
         Row: {
@@ -218,7 +744,22 @@ export type Database = {
           updated_at?: string
           variation_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "job_payments_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_payments_variation_id_fkey"
+            columns: ["variation_id"]
+            isOneToOne: false
+            referencedRelation: "job_variations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       job_stages: {
         Row: {
@@ -341,10 +882,19 @@ export type Database = {
           updated_at?: string
           variation_number?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "job_variations_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       jobs: {
         Row: {
+          account_id: string | null
           client_email: string | null
           client_location: string | null
           client_name: string
@@ -353,6 +903,7 @@ export type Database = {
           created_by: string
           current_sop_stage_id: string | null
           current_stage: Database["public"]["Enums"]["job_stage"]
+          deal_id: string | null
           farm_size_ha: number | null
           field_boundary: Json | null
           id: string
@@ -367,6 +918,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          account_id?: string | null
           client_email?: string | null
           client_location?: string | null
           client_name: string
@@ -375,6 +927,7 @@ export type Database = {
           created_by: string
           current_sop_stage_id?: string | null
           current_stage?: Database["public"]["Enums"]["job_stage"]
+          deal_id?: string | null
           farm_size_ha?: number | null
           field_boundary?: Json | null
           id?: string
@@ -389,6 +942,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          account_id?: string | null
           client_email?: string | null
           client_location?: string | null
           client_name?: string
@@ -397,6 +951,7 @@ export type Database = {
           created_by?: string
           current_sop_stage_id?: string | null
           current_stage?: Database["public"]["Enums"]["job_stage"]
+          deal_id?: string | null
           farm_size_ha?: number | null
           field_boundary?: Json | null
           id?: string
@@ -412,10 +967,24 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "jobs_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "jobs_current_sop_stage_id_fkey"
             columns: ["current_sop_stage_id"]
             isOneToOne: false
             referencedRelation: "sop_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
             referencedColumns: ["id"]
           },
           {
@@ -430,6 +999,82 @@ export type Database = {
             columns: ["template_id"]
             isOneToOne: false
             referencedRelation: "sop_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leads: {
+        Row: {
+          account_id: string | null
+          contact_id: string | null
+          converted_at: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          disqualified_reason: string | null
+          estimated_value: number | null
+          id: string
+          org_id: string
+          owner_id: string | null
+          source: string | null
+          status: Database["public"]["Enums"]["lead_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          account_id?: string | null
+          contact_id?: string | null
+          converted_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          disqualified_reason?: string | null
+          estimated_value?: number | null
+          id?: string
+          org_id: string
+          owner_id?: string | null
+          source?: string | null
+          status?: Database["public"]["Enums"]["lead_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string | null
+          contact_id?: string | null
+          converted_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          disqualified_reason?: string | null
+          estimated_value?: number | null
+          id?: string
+          org_id?: string
+          owner_id?: string | null
+          source?: string | null
+          status?: Database["public"]["Enums"]["lead_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -471,6 +1116,124 @@ export type Database = {
             columns: ["job_id"]
             isOneToOne: false
             referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      opportunities: {
+        Row: {
+          account_id: string | null
+          contact_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          expected_close_date: string | null
+          id: string
+          lead_id: string | null
+          name: string
+          org_id: string
+          owner_id: string | null
+          probability: number
+          stage: Database["public"]["Enums"]["opportunity_stage"]
+          updated_at: string
+          value: number | null
+        }
+        Insert: {
+          account_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          expected_close_date?: string | null
+          id?: string
+          lead_id?: string | null
+          name: string
+          org_id: string
+          owner_id?: string | null
+          probability?: number
+          stage?: Database["public"]["Enums"]["opportunity_stage"]
+          updated_at?: string
+          value?: number | null
+        }
+        Update: {
+          account_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          expected_close_date?: string | null
+          id?: string
+          lead_id?: string | null
+          name?: string
+          org_id?: string
+          owner_id?: string | null
+          probability?: number
+          stage?: Database["public"]["Enums"]["opportunity_stage"]
+          updated_at?: string
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunities_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunities_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunities_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_config: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          org_id: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          org_id: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          org_id?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_config_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -630,7 +1393,15 @@ export type Database = {
           job_id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "post_flight_logs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pre_flight_checks: {
         Row: {
@@ -681,7 +1452,15 @@ export type Database = {
           weather_notes?: string | null
           weather_ok?: boolean
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pre_flight_checks_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -773,7 +1552,15 @@ export type Database = {
           updated_at?: string
           uploaded_by?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "shop_drawings_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sla_defaults: {
         Row: {
@@ -1043,7 +1830,15 @@ export type Database = {
           quantity_l?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "spray_logs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stage_assignments: {
         Row: {
@@ -1158,6 +1953,22 @@ export type Database = {
     Functions: {
       active_org_id: { Args: never; Returns: string }
       can_access_job: { Args: { _job_id: string }; Returns: boolean }
+      close_deal: {
+        Args: { _deal_id: string; _reason?: string; _won: boolean }
+        Returns: undefined
+      }
+      convert_lead_to_opportunity: {
+        Args: { _lead_id: string; _name?: string; _value?: number }
+        Returns: string
+      }
+      convert_opportunity_to_deal: {
+        Args: { _name?: string; _opportunity_id: string; _value?: number }
+        Returns: string
+      }
+      create_job_from_deal: {
+        Args: { _deal_id: string; _service_type?: string; _template_id: string }
+        Returns: string
+      }
       create_job_from_template: {
         Args: {
           _client_email?: string
@@ -1218,6 +2029,13 @@ export type Database = {
       }
     }
     Enums: {
+      activity_type:
+        | "call"
+        | "email"
+        | "meeting"
+        | "note"
+        | "task"
+        | "follow_up"
       app_role:
         | "super_admin"
         | "lead_handler"
@@ -1232,6 +2050,7 @@ export type Database = {
         | "drone_pilot"
         | "operations_manager"
         | "client_manager"
+      deal_status: "open" | "won" | "lost"
       job_stage:
         | "lead_entry"
         | "lead_qualification"
@@ -1250,6 +2069,26 @@ export type Database = {
         | "post_flight_log"
         | "invoicing"
       job_status: "active" | "completed" | "on_hold" | "cancelled"
+      lead_status:
+        | "new"
+        | "working"
+        | "qualified"
+        | "disqualified"
+        | "converted"
+      lifecycle_stage:
+        | "prospect"
+        | "lead"
+        | "opportunity"
+        | "deal"
+        | "client"
+        | "lost"
+      opportunity_stage:
+        | "discovery"
+        | "scoping"
+        | "proposal"
+        | "negotiation"
+        | "won"
+        | "lost"
       stage_status:
         | "locked"
         | "active"
@@ -1383,6 +2222,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      activity_type: ["call", "email", "meeting", "note", "task", "follow_up"],
       app_role: [
         "super_admin",
         "lead_handler",
@@ -1398,6 +2238,7 @@ export const Constants = {
         "operations_manager",
         "client_manager",
       ],
+      deal_status: ["open", "won", "lost"],
       job_stage: [
         "lead_entry",
         "lead_qualification",
@@ -1417,6 +2258,23 @@ export const Constants = {
         "invoicing",
       ],
       job_status: ["active", "completed", "on_hold", "cancelled"],
+      lead_status: ["new", "working", "qualified", "disqualified", "converted"],
+      lifecycle_stage: [
+        "prospect",
+        "lead",
+        "opportunity",
+        "deal",
+        "client",
+        "lost",
+      ],
+      opportunity_stage: [
+        "discovery",
+        "scoping",
+        "proposal",
+        "negotiation",
+        "won",
+        "lost",
+      ],
       stage_status: [
         "locked",
         "active",

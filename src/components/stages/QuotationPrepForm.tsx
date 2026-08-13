@@ -240,15 +240,15 @@ export default function QuotationPrepForm({ formData, jobId, onQuoteConfirm }: S
                 </div>
                 <div>
                   <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Subtotal</p>
-                  <p className="text-sm font-semibold">R {subtotal.toFixed(2)}</p>
+                  <p className="text-sm font-semibold">E {subtotal.toFixed(2)}</p>
                 </div>
                 <div>
                   <p className="text-[11px] uppercase tracking-wide text-muted-foreground">VAT</p>
-                  <p className="text-sm font-semibold">R {vatAmount.toFixed(2)}</p>
+                  <p className="text-sm font-semibold">E {vatAmount.toFixed(2)}</p>
                 </div>
                 <div>
                   <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Total (incl. VAT)</p>
-                  <p className="text-sm font-bold text-success">R {totalAmount.toFixed(2)}</p>
+                  <p className="text-sm font-bold text-success">E {totalAmount.toFixed(2)}</p>
                 </div>
               </div>
               <p className="text-xs text-muted-foreground pt-1">
@@ -304,10 +304,10 @@ export default function QuotationPrepForm({ formData, jobId, onQuoteConfirm }: S
                     <TableCell className="p-2 text-sm">{typeLabel(item.type)}</TableCell>
                     <TableCell className="p-2 text-sm">{item.description}</TableCell>
                     <TableCell className="p-2 text-sm text-right">{item.qty}</TableCell>
-                    <TableCell className="p-2 text-sm text-right">R {item.unit_price.toFixed(2)}</TableCell>
+                    <TableCell className="p-2 text-sm text-right">E {item.unit_price.toFixed(2)}</TableCell>
                     <TableCell className="p-2 text-sm text-right">{item.markup_pct || 0}%</TableCell>
                     <TableCell className="p-2 text-right text-sm font-medium">
-                      R {(item.qty * item.unit_price * (1 + (item.markup_pct || 0) / 100)).toFixed(2)}
+                      E {(item.qty * item.unit_price * (1 + (item.markup_pct || 0) / 100)).toFixed(2)}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -318,7 +318,7 @@ export default function QuotationPrepForm({ formData, jobId, onQuoteConfirm }: S
                     Subtotal
                   </TableCell>
                   <TableCell className="text-right font-semibold text-sm">
-                    R {subtotal.toFixed(2)}
+                    E {subtotal.toFixed(2)}
                   </TableCell>
                 </TableRow>
               </TableFooter>
@@ -337,7 +337,7 @@ export default function QuotationPrepForm({ formData, jobId, onQuoteConfirm }: S
       <div className="rounded border border-accent/30 bg-accent/5 p-3">
         <p className="text-sm font-medium text-muted-foreground">Total (incl. VAT)</p>
         <p className="font-heading text-xl font-bold text-accent">
-          R {totalAmount.toFixed(2)}
+          E {totalAmount.toFixed(2)}
         </p>
       </div>
       <StageField type="text" label="Validity Period" readOnly

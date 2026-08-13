@@ -11,10 +11,13 @@ import { ArrowLeft, Check, Copy, ExternalLink, Loader2, Save, X } from "lucide-r
 import { toast } from "sonner";
 import DynamicPipelineBar from "@/components/sop/DynamicPipelineBar";
 import DynamicStageForm from "@/components/sop/DynamicStageForm";
+import QuotationPrepForm from "@/components/stages/QuotationPrepForm";
 import SlaTimer from "@/components/sla/SlaTimer";
 import SlaDeadlineEditor from "@/components/sla/SlaDeadlineEditor";
 import LegacyJobDetail from "@/pages/LegacyJobDetail";
 import type { SopFieldRow } from "@/lib/sopFields";
+import EngineChain from "@/components/sop/EngineChain";
+import JobLifecycleTrail from "@/components/crm/JobLifecycleTrail";
 
 interface JobRow {
   id: string;
@@ -42,6 +45,15 @@ interface JobStageRow {
   form_data: any;
   sla_deadline_hours: number | null;
   sla_started_at: string | null;
+  primary_owner_id: string | null;
+  secondary_owner_id: string | null;
+}
+
+interface StageMeta {
+  description: string | null;
+  requires_approval: boolean;
+  primaryRole: string | null;
+  secondaryRole: string | null;
 }
 
 export default function JobDetail() {
@@ -54,6 +66,8 @@ export default function JobDetail() {
   const [legacy, setLegacy] = useState(false);
   const [stages, setStages] = useState<JobStageRow[]>([]);
   const [fields, setFields] = useState<SopFieldRow[]>([]);
+  const [stageMeta, setStageMeta] = useState<StageMeta | null>(null);
+  const [ownerNames, setOwnerNames] = useState<Record<string, string>>({});
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [notes, setNotes] = useState("");
@@ -63,6 +77,7 @@ export default function JobDetail() {
   const [rejecting, setRejecting] = useState(false);
   const [showReject, setShowReject] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [quoteConfirmed, setQuoteConfirmed] = useState(false);
 
   const fetchJob = useCallback(async () => {
     if (!id) return;
@@ -100,16 +115,25 @@ export default function JobDetail() {
 
   const current = useMemo(() => stages.find((s) => s.id === selectedId) ?? null, [stages, selectedId]);
 
+  // Quotation steps are externally managed by the Quote Builder — they must not
+  // render as a plain field form like every other stage.
+  const isQuoteStage = useMemo(() => {
+    const n = (current?.stage_name || "").toLowerCase();
+    return /quot/.test(n);
+  }, [current?.stage_name]);
+
   // Load stage form state + its custom fields
   useEffect(() => {
     if (!current) return;
     setFormData((current.form_data as Record<string, any>) || {});
     setNotes(current.notes || "");
     setDirty(false);
+    setQuoteConfirmed(false);
     setShowReject(false);
     setRejectionReason("");
     if (!current.sop_stage_id) {
       setFields([]);
+      setStageMeta(null);
       return;
     }
     supabase
@@ -118,7 +142,40 @@ export default function JobDetail() {
       .eq("stage_id", current.sop_stage_id)
       .order("position")
       .then(({ data }) => setFields((data || []) as unknown as SopFieldRow[]));
+    supabase
+      .from("sop_stages")
+      .select("description, requires_approval, primary_role:org_roles!sop_stages_primary_role_id_fkey(name), secondary_role:org_roles!sop_stages_secondary_role_id_fkey(name)")
+      .eq("id", current.sop_stage_id)
+      .maybeSingle()
+      .then(({ data }: any) =>
+        setStageMeta(
+          data
+            ? {
+                description: data.description,
+                requires_approval: !!data.requires_approval,
+                primaryRole: data.primary_role?.name ?? null,
+                secondaryRole: data.secondary_role?.name ?? null,
+              }
+            : null
+        )
+      );
   }, [current?.id]);
+
+  // Resolve the people currently responsible for this stage
+  useEffect(() => {
+    const ids = [current?.primary_owner_id, current?.secondary_owner_id].filter(Boolean) as string[];
+    if (ids.length === 0) return;
+    supabase
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", ids)
+      .then(({ data }) =>
+        setOwnerNames((prev) => ({
+          ...prev,
+          ...Object.fromEntries((data || []).map((p: any) => [p.id, p.full_name])),
+        }))
+      );
+  }, [current?.primary_owner_id, current?.secondary_owner_id]);
 
   const canEdit = !!current && current.status !== "locked" && current.status !== "approved";
 
@@ -254,6 +311,12 @@ export default function JobDetail() {
         </div>
       </div>
 
+      <EngineChain
+        active={["work", "sop", "workflow", "stage", "responsibility", "form", "sla", "approval"]}
+      />
+
+      <JobLifecycleTrail jobId={job.id} />
+
       <Card>
         <CardContent className="p-4">
           <DynamicPipelineBar
@@ -297,6 +360,38 @@ export default function JobDetail() {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
+              {(stageMeta?.description ||
+                stageMeta?.primaryRole ||
+                current.primary_owner_id ||
+                stageMeta?.requires_approval) && (
+                <div className="space-y-2 rounded border border-border bg-muted/40 p-3">
+                  {stageMeta?.description && (
+                    <p className="text-sm text-muted-foreground">{stageMeta.description}</p>
+                  )}
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    <Badge variant="outline">
+                      Responsible: {stageMeta?.primaryRole || "Unassigned role"}
+                      {current.primary_owner_id && ownerNames[current.primary_owner_id]
+                        ? ` · ${ownerNames[current.primary_owner_id]}`
+                        : ""}
+                    </Badge>
+                    {(stageMeta?.secondaryRole || current.secondary_owner_id) && (
+                      <Badge variant="outline">
+                        Backup: {stageMeta?.secondaryRole || "Role"}
+                        {current.secondary_owner_id && ownerNames[current.secondary_owner_id]
+                          ? ` · ${ownerNames[current.secondary_owner_id]}`
+                          : ""}
+                      </Badge>
+                    )}
+                    {stageMeta?.requires_approval && (
+                      <Badge variant="outline" className="border-accent text-accent">
+                        Approval gate
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <SlaTimer
                   slaDeadlineHours={current.sla_deadline_hours}
@@ -316,16 +411,30 @@ export default function JobDetail() {
                 )}
               </div>
 
-              <DynamicStageForm
-                fields={fields}
-                formData={formData}
-                onChange={(d) => {
-                  setFormData(d);
-                  setDirty(true);
-                }}
-                readOnly={!canEdit}
-                jobId={job.id}
-              />
+              {isQuoteStage ? (
+                <QuotationPrepForm
+                  formData={formData}
+                  onChange={(d) => {
+                    setFormData(d);
+                    setDirty(true);
+                  }}
+                  readOnly={!canEdit}
+                  jobId={job.id}
+                  stageId={current.id}
+                  onQuoteConfirm={setQuoteConfirmed}
+                />
+              ) : (
+                <DynamicStageForm
+                  fields={fields}
+                  formData={formData}
+                  onChange={(d) => {
+                    setFormData(d);
+                    setDirty(true);
+                  }}
+                  readOnly={!canEdit}
+                  jobId={job.id}
+                />
+              )}
 
               {canEdit ? (
                 <div className="space-y-2 border-t border-border pt-4">
@@ -368,7 +477,7 @@ export default function JobDetail() {
                   </Button>
                   <Button
                     onClick={handleApprove}
-                    disabled={approving}
+                    disabled={approving || (isQuoteStage && !quoteConfirmed)}
                     className="bg-success text-success-foreground hover:bg-success/90"
                   >
                     {approving ? (
@@ -378,6 +487,11 @@ export default function JobDetail() {
                     )}
                     Approve &amp; Advance
                   </Button>
+                  {isQuoteStage && !quoteConfirmed && (
+                    <p className="w-full text-xs text-muted-foreground">
+                      Confirm the synced quote above before approving this step.
+                    </p>
+                  )}
                   <Button
                     variant="outline"
                     onClick={() => setShowReject((v) => !v)}

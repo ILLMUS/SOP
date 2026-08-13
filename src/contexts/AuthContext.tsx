@@ -42,14 +42,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUserData = useCallback(async (userId: string) => {
     try {
       const [profileRes, rolesRes] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", userId).single(),
+        supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
         supabase.rpc("get_user_roles", { _user_id: userId }),
       ]);
 
-      if (profileRes.data) setProfile(profileRes.data);
+      let profileRow = profileRes.data;
+
+      // Self-heal: a sign-in without a profile row would leave the app with no user context.
+      if (!profileRow) {
+        const { data: authUser } = await supabase.auth.getUser();
+        const meta = authUser?.user;
+        if (meta?.email) {
+          const { data: created } = await supabase
+            .from("profiles")
+            .insert({
+              id: userId,
+              email: meta.email,
+              full_name: (meta.user_metadata?.full_name as string) || meta.email,
+            })
+            .select()
+            .maybeSingle();
+          profileRow = created ?? null;
+        }
+      }
+
+      if (profileRow) setProfile(profileRow);
       if (rolesRes.data) setRoles(rolesRes.data as AppRole[]);
 
-      const orgId = profileRes.data?.org_id ?? null;
+      const orgId = profileRow?.org_id ?? null;
       if (orgId) {
         const { data: org } = await supabase
           .from("organizations")

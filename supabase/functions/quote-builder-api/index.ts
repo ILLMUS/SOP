@@ -168,6 +168,62 @@ async function notifyStageOwners(supabase: any, stage: any, jobInfo: any, jobId:
   }
 }
 
+/**
+ * Mirrors a synced quote/invoice/receipt into the central finance_documents
+ * store so Finance and Client 360 stay correct even when a document is not
+ * tied to a stage form.
+ */
+async function recordFinanceDocument(
+  supabase: any,
+  jobId: string,
+  doc: {
+    doc_type: "quote" | "invoice" | "receipt";
+    reference: string;
+    amount: number;
+    currency?: string;
+    status?: string;
+    issued_at?: string;
+    due_date?: string | null;
+    document_url?: string | null;
+    external_id?: string | null;
+    notes?: string | null;
+  },
+  userId: string,
+) {
+  const { data: job } = await supabase
+    .from("jobs")
+    .select("org_id, client_name, account_id, deal_id")
+    .eq("id", jobId)
+    .single();
+  if (!job?.org_id) return;
+
+  const payload = {
+    org_id: job.org_id,
+    doc_type: doc.doc_type,
+    reference: doc.reference,
+    external_id: doc.external_id ?? null,
+    source: "quote_builder",
+    amount: Number(doc.amount) || 0,
+    currency: doc.currency || "SZL",
+    status: doc.status || "issued",
+    issued_at: doc.issued_at || new Date().toISOString().slice(0, 10),
+    due_date: doc.due_date || null,
+    document_url: doc.document_url || null,
+    client_name: job.client_name || null,
+    notes: doc.notes || null,
+    account_id: job.account_id ?? null,
+    deal_id: job.deal_id ?? null,
+    job_id: jobId,
+    created_by: userId,
+    synced_at: new Date().toISOString(),
+  };
+
+  const { error } = await supabase
+    .from("finance_documents")
+    .upsert(payload, { onConflict: "org_id,doc_type,reference" });
+  if (error) console.error("finance_documents upsert failed:", error.message);
+}
+
 async function syncQuote(supabase: any, jobId: string, body: any, userId: string) {
   const {
     quote_ref,
@@ -261,6 +317,14 @@ async function syncQuote(supabase: any, jobId: string, body: any, userId: string
   await notifyStageOwners(supabase, stage, jobInfo, jobId, userId, "Quote Synced",
     `Quote "${quote_ref}" (R ${parseFloat(quote_amount).toFixed(2)}) synced for ${jobLabel}.`, "quote_sync");
 
+  await recordFinanceDocument(supabase, jobId, {
+    doc_type: "quote",
+    reference: String(quote_ref),
+    amount: Number(total_amount ?? quote_amount),
+    currency,
+    document_url: quote_document_url || null,
+  }, userId);
+
   return new Response(JSON.stringify({ success: true, type: "quote", stage_id: stage.id }), {
     status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
@@ -318,6 +382,14 @@ async function syncInvoice(supabase: any, jobId: string, body: any, userId: stri
   const jobLabel = jobInfo ? `${jobInfo.job_number} (${jobInfo.client_name})` : jobId;
   await notifyStageOwners(supabase, stage, jobInfo, jobId, userId, "Invoice Synced",
     `Invoice "${invoice_number}" (R ${parseFloat(invoice_amount).toFixed(2)}) synced for ${jobLabel}.`, "invoice_sync");
+
+  await recordFinanceDocument(supabase, jobId, {
+    doc_type: "invoice",
+    reference: String(invoice_number),
+    amount: Number(invoice_amount),
+    due_date: due_date || null,
+    document_url: invoice_document_url || null,
+  }, userId);
 
   return new Response(JSON.stringify({ success: true, type: "invoice", stage_id: stage.id }), {
     status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -391,6 +463,17 @@ async function syncReceipt(supabase: any, jobId: string, body: any, userId: stri
   const jobLabel = jobInfo ? `${jobInfo.job_number} (${jobInfo.client_name})` : jobId;
   await notifyStageOwners(supabase, closureRes.data, jobInfo, jobId, userId, "Receipt Synced",
     `Payment of R ${Number(amount).toFixed(2)} recorded for ${jobLabel}.`, "receipt_sync");
+
+  if (refKey) {
+    await recordFinanceDocument(supabase, jobId, {
+      doc_type: "receipt",
+      reference: String(refKey),
+      amount: Number(amount),
+      status: "paid",
+      issued_at: String(paid_at).slice(0, 10),
+      document_url: proof_url || null,
+    }, userId);
+  }
 
   return new Response(JSON.stringify({ success: true, type: "receipt", payment_id: paymentRow.id }), {
     status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },

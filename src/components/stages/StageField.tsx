@@ -105,7 +105,7 @@ export default function StageField(props: StageFieldProps) {
       <Label>{label} {required && <span className="text-destructive">*</span>}</Label>
       <div className="relative">
         {type === "currency" && (
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">R</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">E</span>
         )}
         <Input
           type={type === "currency" ? "number" : type}
