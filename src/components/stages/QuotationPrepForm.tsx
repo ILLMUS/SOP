@@ -159,25 +159,42 @@ export default function QuotationPrepForm({ formData, jobId, onQuoteConfirm }: S
       </Card>
 
       {/* Launch Quote Builder */}
-      {quoteBuilderUrl && jobId && (
-        <Card className="border-primary/30 bg-primary/5 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="text-sm font-semibold text-primary flex items-center gap-2">
-                <Rocket className="h-4 w-4" />
-                External Quote Builder — Quote
-              </h4>
-              <p className="text-xs text-muted-foreground mt-1">
-                Open the Quote section pre-filled with this job's data.
-              </p>
-            </div>
-            <Button size="sm" onClick={handleLaunch} className="gap-1.5">
-              <ExternalLink className="h-3.5 w-3.5" />
-              Open Quote Builder
-            </Button>
-          </div>
-        </Card>
+<Card className="border-primary/30 bg-primary/5 p-4">
+  <div className="flex items-center justify-between gap-4">
+    <div>
+      <h4 className="text-sm font-semibold text-primary flex items-center gap-2">
+        <Rocket className="h-4 w-4" />
+        External Quote Builder
+      </h4>
+
+      <p className="text-xs text-muted-foreground mt-1">
+        Create the quotation in the external Quote Builder using this
+        client's job information.
+      </p>
+
+      {!quoteBuilderUrl && (
+        <p className="text-xs text-destructive mt-2">
+          Quote Builder URL is not configured.
+        </p>
       )}
+
+      {!jobId && (
+        <p className="text-xs text-destructive mt-2">
+          Job ID is missing.
+        </p>
+      )}
+    </div>
+
+    <Button
+      size="sm"
+      onClick={handleLaunch}
+      className="gap-1.5 shrink-0"
+    >
+      <Rocket className="h-3.5 w-3.5" />
+      Launch Quote Builder
+    </Button>
+  </div>
+</Card>
 
       {/* Launch Result */}
       {launchResult && (
