@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { CURRENCY_CODE } from "@/lib/currency";
@@ -19,6 +20,8 @@ interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   doc?: ExternalDoc | null;
+  /** Prefills a brand-new document (used by the worked example templates). */
+  preset?: Partial<ExternalDoc> | null;
   jobs: Job[];
   accounts: Tables<"accounts">[];
   deals: Tables<"deals">[];
@@ -30,7 +33,7 @@ interface Props {
  * document builder, so Finance totals stay correct without duplicating
  * the accounting workflow inside this app.
  */
-export default function ExternalDocDialog({ open, onOpenChange, doc, jobs, accounts, deals, onSaved }: Props) {
+export default function ExternalDocDialog({ open, onOpenChange, doc, preset, jobs, accounts, deals, onSaved }: Props) {
   const { orgId, user } = useAuth();
   const [saving, setSaving] = useState(false);
   const [docType, setDocType] = useState<string>("quote");
@@ -45,22 +48,25 @@ export default function ExternalDocDialog({ open, onOpenChange, doc, jobs, accou
   const [accountId, setAccountId] = useState<string>(NONE);
   const [dealId, setDealId] = useState<string>(NONE);
   const [jobId, setJobId] = useState<string>(NONE);
+  const [isExample, setIsExample] = useState(false);
 
   useEffect(() => {
     if (!open) return;
-    setDocType(doc?.doc_type ?? "quote");
-    setReference(doc?.reference ?? "");
-    setAmount(doc ? String(doc.amount) : "");
-    setStatus(doc?.status ?? "issued");
-    setIssuedAt(doc?.issued_at ?? new Date().toISOString().slice(0, 10));
-    setDueDate(doc?.due_date ?? "");
-    setClientName(doc?.client_name ?? "");
-    setDocumentUrl(doc?.document_url ?? "");
-    setNotes(doc?.notes ?? "");
-    setAccountId(doc?.account_id ?? NONE);
-    setDealId(doc?.deal_id ?? NONE);
-    setJobId(doc?.job_id ?? NONE);
-  }, [open, doc]);
+    const base = doc ?? preset ?? null;
+    setDocType(base?.doc_type ?? "quote");
+    setReference(base?.reference ?? "");
+    setAmount(base?.amount != null ? String(base.amount) : "");
+    setStatus(base?.status ?? "issued");
+    setIssuedAt(base?.issued_at ?? new Date().toISOString().slice(0, 10));
+    setDueDate(base?.due_date ?? "");
+    setClientName(base?.client_name ?? "");
+    setDocumentUrl(base?.document_url ?? "");
+    setNotes(base?.notes ?? "");
+    setAccountId(base?.account_id ?? NONE);
+    setDealId(base?.deal_id ?? NONE);
+    setJobId(base?.job_id ?? NONE);
+    setIsExample(base?.is_example ?? false);
+  }, [open, doc, preset]);
 
   const save = async () => {
     if (!orgId) return;
@@ -86,6 +92,7 @@ export default function ExternalDocDialog({ open, onOpenChange, doc, jobs, accou
       deal_id: dealId === NONE ? null : dealId,
       job_id: jobId === NONE ? null : jobId,
       source: doc?.source ?? "manual",
+      is_example: isExample,
       created_by: user?.id ?? null,
     };
 
@@ -201,6 +208,16 @@ export default function ExternalDocDialog({ open, onOpenChange, doc, jobs, accou
           <div className="space-y-2">
             <Label htmlFor="ed-notes">Notes</Label>
             <Textarea id="ed-notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
+          </div>
+
+          <div className="flex items-center justify-between gap-4 rounded-lg border border-border p-3">
+            <div className="space-y-0.5">
+              <Label htmlFor="ed-example">Example record</Label>
+              <p className="text-xs text-muted-foreground">
+                Marks this as a sample document so it can be hidden or filtered out from real client data.
+              </p>
+            </div>
+            <Switch id="ed-example" checked={isExample} onCheckedChange={setIsExample} />
           </div>
         </div>
 

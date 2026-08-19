@@ -5,6 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -15,11 +17,12 @@ import { ExternalLink, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import { formatDate, formatMoney } from "@/lib/crm";
 import { useFinance } from "@/hooks/useFinance";
 import {
-  EXPENSE_CATEGORY_LABELS, externalReceiptsWithoutPayment, monthlyRevenue, sum,
+  computeTotals, EXPENSE_CATEGORY_LABELS, externalReceiptsWithoutPayment, monthlyRevenue, sum,
   type Expense, type ExternalDoc, type FinanceDoc,
 } from "@/lib/finance";
 import ExpenseDialog from "@/components/finance/ExpenseDialog";
 import ExternalDocDialog from "@/components/finance/ExternalDocDialog";
+import WorkedExamples from "@/components/finance/WorkedExamples";
 
 function Kpi({ label, value, hint, tone }: { label: string; value: string; hint?: string; tone?: "positive" | "negative" }) {
   return (
@@ -47,6 +50,7 @@ function DocRow({ doc, onEdit, onDelete }: { doc: FinanceDoc; onEdit?: () => voi
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-3">
+        {doc.isExample && <Badge variant="secondary">Example</Badge>}
         {doc.source && doc.source !== "stage" && <Badge variant="outline" className="capitalize">{doc.source}</Badge>}
         <span className="font-medium">{formatMoney(doc.amount)}</span>
         {doc.documentUrl && (
@@ -64,11 +68,13 @@ function DocRow({ doc, onEdit, onDelete }: { doc: FinanceDoc; onEdit?: () => voi
 export default function Finance() {
   const fin = useFinance();
   const [search, setSearch] = useState("");
+  const [showExamples, setShowExamples] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Expense | null>(null);
   const [deleting, setDeleting] = useState<Expense | null>(null);
   const [docDialogOpen, setDocDialogOpen] = useState(false);
   const [editingDoc, setEditingDoc] = useState<ExternalDoc | null>(null);
+  const [presetDoc, setPresetDoc] = useState<Partial<ExternalDoc> | null>(null);
   const [deletingDoc, setDeletingDoc] = useState<ExternalDoc | null>(null);
 
   const trend = useMemo(() => monthlyRevenue(fin.payments, fin.expenses), [fin.payments, fin.expenses]);
@@ -79,14 +85,21 @@ export default function Finance() {
   const match = (...parts: (string | null | undefined)[]) =>
     !q || parts.some((p) => (p || "").toLowerCase().includes(q));
 
-  const quotes = fin.quotes.filter((d) => match(d.reference, d.jobNumber, d.clientName));
-  const invoices = fin.invoices.filter((d) => match(d.reference, d.jobNumber, d.clientName));
+  const visible = (isExample?: boolean | null) => showExamples || !isExample;
+  const allQuotes = fin.quotes.filter((d) => visible(d.isExample));
+  const allInvoices = fin.invoices.filter((d) => visible(d.isExample));
+  const allReceipts = fin.receipts.filter((r) => visible(r.is_example));
+  const exampleCount = fin.externalDocs.filter((d) => d.is_example).length;
+
+  const quotes = allQuotes.filter((d) => match(d.reference, d.jobNumber, d.clientName));
+  const invoices = allInvoices.filter((d) => match(d.reference, d.jobNumber, d.clientName));
   const payments = fin.payments.filter((p) => match(p.reference, p.payment_type, jobNumber(p.job_id)));
   const expenses = fin.expenses.filter((e) => match(e.description, e.vendor, e.category, jobNumber(e.job_id)));
-  const receipts = externalReceiptsWithoutPayment(fin.receipts, fin.payments)
+  const receipts = externalReceiptsWithoutPayment(allReceipts, fin.payments)
     .filter((r) => match(r.reference, r.client_name, jobNumber(r.job_id)));
   const findDoc = (id?: string) => fin.externalDocs.find((d) => d.id === id) || null;
-  const openDoc = (d: ExternalDoc | null) => { setEditingDoc(d); setDocDialogOpen(true); };
+  const openDoc = (d: ExternalDoc | null) => { setEditingDoc(d); setPresetDoc(null); setDocDialogOpen(true); };
+  const openPreset = (p: Partial<ExternalDoc>) => { setEditingDoc(null); setPresetDoc(p); setDocDialogOpen(true); };
   const docActions = (doc: FinanceDoc) =>
     doc.externalDocId
       ? {
@@ -116,7 +129,16 @@ export default function Finance() {
     fin.reload();
   };
 
-  const t = fin.totals;
+  const t = showExamples
+    ? fin.totals
+    : computeTotals({
+        quotes: allQuotes,
+        invoices: allInvoices,
+        payments: fin.payments,
+        variations: fin.variations,
+        expenses: fin.expenses,
+        receipts: allReceipts,
+      });
 
   return (
     <div className="space-y-6">
@@ -128,6 +150,12 @@ export default function Finance() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 rounded-lg border border-border px-3 py-2">
+            <Switch id="show-examples" checked={showExamples} onCheckedChange={setShowExamples} />
+            <Label htmlFor="show-examples" className="cursor-pointer whitespace-nowrap text-xs">
+              Examples{exampleCount ? ` (${exampleCount})` : ""}
+            </Label>
+          </div>
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -160,6 +188,7 @@ export default function Finance() {
               <TabsTrigger value="invoices">Invoices</TabsTrigger>
               <TabsTrigger value="payments">Payments</TabsTrigger>
               <TabsTrigger value="expenses">Expenses</TabsTrigger>
+              <TabsTrigger value="examples">Examples</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="mt-4 grid gap-6 lg:grid-cols-2">
@@ -301,6 +330,16 @@ export default function Finance() {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            <TabsContent value="examples" className="mt-4">
+              <WorkedExamples
+                accounts={fin.accounts}
+                jobs={fin.jobs}
+                docs={fin.externalDocs}
+                onFill={openPreset}
+                onEdit={(d) => openDoc(d)}
+              />
+            </TabsContent>
           </Tabs>
         </>
       )}
@@ -319,6 +358,7 @@ export default function Finance() {
         open={docDialogOpen}
         onOpenChange={setDocDialogOpen}
         doc={editingDoc}
+        preset={presetDoc}
         jobs={fin.jobs}
         accounts={fin.accounts}
         deals={fin.deals}

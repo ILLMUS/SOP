@@ -1,4 +1,4 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { LogOut, Menu, Moon, Sun, Building2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ export default function AppHeader({ onMenuToggle }: AppHeaderProps) {
   const { profile, signOut, organization } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { pathname } = useLocation();
+  const navigate = useNavigate();
 
   const match =
     [...ROUTE_TITLES]
@@ -72,9 +73,15 @@ export default function AppHeader({ onMenuToggle }: AppHeaderProps) {
           <LogOut className="h-4 w-4" />
         </Button>
 
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+        <button
+          type="button"
+          onClick={() => navigate("/settings")}
+          title={`${profile?.full_name ?? "Profile"} — edit profile`}
+          aria-label="Edit your profile"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground transition-opacity hover:opacity-85 focus-visible:ring-2 focus-visible:ring-ring"
+        >
           {initials}
-        </div>
+        </button>
       </div>
     </header>
   );

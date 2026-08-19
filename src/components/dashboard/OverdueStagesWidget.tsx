@@ -12,10 +12,15 @@ import type { Database } from "@/integrations/supabase/types";
 
 type JobStageEnum = Database["public"]["Enums"]["job_stage"];
 
+/** Dynamic workflows store a free-text stage name; legacy jobs use the fixed enum. */
+const stageLabel = (name: string | null, stage: JobStageEnum | null) =>
+  name || (stage ? STAGE_LABELS[stage] : null) || "Stage";
+
 interface OverdueStage {
   id: string;
   job_id: string;
-  stage: JobStageEnum;
+  stage: JobStageEnum | null;
+  stage_name: string | null;
   sla_deadline_hours: number;
   sla_started_at: string;
   job_number: string;
@@ -35,7 +40,7 @@ export default function OverdueStagesWidget() {
     const fetchOverdue = async () => {
       const { data: stages } = await supabase
         .from("job_stages")
-        .select("id, job_id, stage, sla_deadline_hours, sla_started_at, status, primary_owner_id, secondary_owner_id")
+        .select("id, job_id, stage, stage_name, sla_deadline_hours, sla_started_at, status, primary_owner_id, secondary_owner_id")
         .eq("status", "active")
         .not("sla_started_at", "is", null)
         .not("sla_deadline_hours", "is", null);
@@ -78,6 +83,7 @@ export default function OverdueStagesWidget() {
             id: o.stage.id,
             job_id: o.stage.job_id,
             stage: o.stage.stage,
+            stage_name: o.stage.stage_name,
             sla_deadline_hours: o.stage.sla_deadline_hours!,
             sla_started_at: o.stage.sla_started_at!,
             job_number: job.job_number,
@@ -100,7 +106,7 @@ export default function OverdueStagesWidget() {
             (o.stage.primary_owner_id === user.id || o.stage.secondary_owner_id === user.id);
           if (!shouldToast("overdue", { stage: o.stage.stage, assignedToMe })) continue;
           notifiedRef.current.add(o.stage.id);
-          toast.error(`Overdue: ${STAGE_LABELS[o.stage.stage]}`, {
+          toast.error(`Overdue: ${stageLabel(o.stage.stage_name, o.stage.stage)}`, {
             description: `${job.job_number} · ${job.client_name} — ${o.hoursOverdue}h past SLA`,
             action: {
               label: "Open",
@@ -160,7 +166,7 @@ export default function OverdueStagesWidget() {
                   <span className="truncate text-sm font-medium">{item.client_name}</span>
                 </div>
                 <Badge variant="outline" className="mt-1 text-xs">
-                  {STAGE_LABELS[item.stage]}
+                  {stageLabel(item.stage_name, item.stage)}
                 </Badge>
               </div>
               <div className="flex items-center gap-2">

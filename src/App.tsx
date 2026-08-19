@@ -24,9 +24,25 @@ import TrackJob from "@/pages/TrackJob";
 import Onboarding from "@/pages/Onboarding";
 import Home from "@/pages/Home";
 import Outreach from "@/pages/modules/Outreach";
+import CaptureForms from "@/pages/outreach/CaptureForms";
+import OutreachInbox from "@/pages/outreach/Inbox";
+import Campaigns from "@/pages/outreach/Campaigns";
+import CampaignDetail from "@/pages/outreach/CampaignDetail";
+import OutreachTimeline from "@/pages/outreach/Timeline";
+import SalesWinLoss from "@/pages/sales/WinLoss";
+import SalesForecast from "@/pages/sales/Forecast";
+import SalesProposals from "@/pages/sales/Proposals";
+import PublicForm from "@/pages/PublicForm";
 import Sales from "@/pages/modules/Sales";
 import Operations from "@/pages/modules/Operations";
+import OperationsSchedule from "@/pages/operations/Schedule";
+import OperationsAllocation from "@/pages/operations/Allocation";
+import OperationsQC from "@/pages/operations/QualityControl";
 import Clients from "@/pages/modules/Clients";
+import PortalAccess from "@/pages/clients/PortalAccess";
+import SupportTickets from "@/pages/clients/SupportTickets";
+import ClientFeedbackPage from "@/pages/clients/Feedback";
+import ClientReminders from "@/pages/clients/Reminders";
 import Finance from "@/pages/modules/Finance";
 import Accounts from "@/pages/crm/Accounts";
 import AccountDetail from "@/pages/crm/AccountDetail";
@@ -48,6 +64,7 @@ const App = () => (
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/track" element={<TrackJob />} />
+            <Route path="/f/:slug" element={<PublicForm />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/" element={<Home />} />
             <Route
@@ -59,9 +76,24 @@ const App = () => (
             >
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/outreach" element={<Outreach />} />
+              <Route path="/outreach/forms" element={<CaptureForms />} />
+              <Route path="/outreach/inbox" element={<OutreachInbox />} />
+              <Route path="/outreach/campaigns" element={<Campaigns />} />
+              <Route path="/outreach/campaigns/:id" element={<CampaignDetail />} />
+              <Route path="/outreach/timeline" element={<OutreachTimeline />} />
               <Route path="/sales" element={<Sales />} />
+              <Route path="/sales/win-loss" element={<SalesWinLoss />} />
+              <Route path="/sales/forecast" element={<SalesForecast />} />
+              <Route path="/sales/proposals" element={<SalesProposals />} />
               <Route path="/operations" element={<Operations />} />
+              <Route path="/operations/schedule" element={<OperationsSchedule />} />
+              <Route path="/operations/allocation" element={<OperationsAllocation />} />
+              <Route path="/operations/qc" element={<OperationsQC />} />
               <Route path="/clients" element={<Clients />} />
+              <Route path="/clients/portal" element={<PortalAccess />} />
+              <Route path="/clients/tickets" element={<SupportTickets />} />
+              <Route path="/clients/feedback" element={<ClientFeedbackPage />} />
+              <Route path="/clients/reminders" element={<ClientReminders />} />
               <Route path="/finance" element={<Finance />} />
               <Route path="/crm/accounts" element={<Accounts />} />
               <Route path="/crm/accounts/:id" element={<AccountDetail />} />

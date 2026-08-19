@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,7 @@ type Counts = Record<"jobs" | "approvals" | "assignments" | "overdue", number>;
 export default function AppSidebar({ open, onClose, collapsed, onToggleCollapse }: AppSidebarProps) {
   const { isAdmin, organization, profile, roles, user } = useAuth();
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const [counts, setCounts] = useState<Counts>({ jobs: 0, approvals: 0, assignments: 0, overdue: 0 });
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
 
@@ -248,9 +249,13 @@ export default function AppSidebar({ open, onClose, collapsed, onToggleCollapse 
         </button>
 
         {/* User */}
-        <div
+        <button
+          type="button"
+          onClick={() => navigate("/settings")}
+          title="Edit your profile"
+          aria-label="Edit your profile"
           className={cn(
-            "flex shrink-0 items-center gap-2.5 border-t border-sidebar-border px-4 py-3",
+            "flex w-full shrink-0 items-center gap-2.5 border-t border-sidebar-border px-4 py-3 text-left transition-colors hover:bg-sidebar-accent/40",
             collapsed && "justify-center px-0"
           )}
         >
@@ -268,7 +273,7 @@ export default function AppSidebar({ open, onClose, collapsed, onToggleCollapse 
               <MoreVertical className="h-4 w-4 shrink-0 text-sidebar-foreground/40" />
             </>
           )}
-        </div>
+        </button>
       </aside>
     </>
   );

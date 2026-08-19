@@ -92,14 +92,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          // Use setTimeout to avoid Supabase deadlock
-          setTimeout(() => fetchUserData(session.user.id), 0);
+          // Use setTimeout to avoid Supabase deadlock. Keep loading until the
+          // profile and roles are in, so admin-only routes do not bounce.
+          setTimeout(async () => {
+            await fetchUserData(session.user.id);
+            setIsLoading(false);
+          }, 0);
         } else {
           setProfile(null);
           setOrganization(null);
           setRoles([]);
+          setIsLoading(false);
         }
-        setIsLoading(false);
       }
     );
 
@@ -107,9 +111,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchUserData(session.user.id);
+        fetchUserData(session.user.id).finally(() => setIsLoading(false));
+      } else {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     });
 
     return () => subscription.unsubscribe();

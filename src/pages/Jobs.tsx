@@ -12,11 +12,19 @@ import type { Tables } from "@/integrations/supabase/types";
 
 type Job = Tables<"jobs">;
 
+interface JobProgress {
+  pct: number;
+  done: number;
+  total: number;
+  currentName: string | null;
+}
+
 export default function Jobs() {
   const navigate = useNavigate();
   const { hasRole } = useAuth();
   const isSuperAdmin = hasRole("super_admin");
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [progress, setProgress] = useState<Record<string, JobProgress>>({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
@@ -26,7 +34,31 @@ export default function Jobs() {
         .from("jobs")
         .select("*")
         .order("created_at", { ascending: false });
-      setJobs(data || []);
+      const list = data || [];
+      setJobs(list);
+
+      if (list.length > 0) {
+        // Progress comes from the job's own SOP stages, not the legacy stage enum
+        const { data: stageRows } = await supabase
+          .from("job_stages")
+          .select("job_id, status, position, stage_name, stage")
+          .in("job_id", list.map((j) => j.id))
+          .order("position");
+
+        const map: Record<string, JobProgress> = {};
+        (stageRows || []).forEach((row: any) => {
+          const entry = (map[row.job_id] ||= { pct: 0, done: 0, total: 0, currentName: null });
+          entry.total += 1;
+          if (row.status === "approved") entry.done += 1;
+          if (!entry.currentName && row.status !== "approved" && row.status !== "locked") {
+            entry.currentName = row.stage_name || (row.stage ? STAGE_LABELS[row.stage] : null);
+          }
+        });
+        Object.values(map).forEach((e) => {
+          e.pct = e.total > 0 ? Math.round((e.done / e.total) * 100) : 0;
+        });
+        setProgress(map);
+      }
       setLoading(false);
     };
     fetchJobs();
@@ -104,8 +136,15 @@ export default function Jobs() {
                   </tr>
                 ) : (
                   filtered.map((job) => {
-                    const stageIdx = STAGE_ORDER.indexOf(job.current_stage);
-                    const pct = Math.round(((stageIdx + 1) / STAGE_ORDER.length) * 100);
+                    const p = progress[job.id];
+                    const legacyIdx = STAGE_ORDER.indexOf(job.current_stage);
+                    const pct = p
+                      ? p.pct
+                      : Math.round(((legacyIdx + 1) / STAGE_ORDER.length) * 100);
+                    const done = p ? p.done : Math.max(legacyIdx, 0);
+                    const total = p ? p.total : STAGE_ORDER.length;
+                    const stageLabel =
+                      p?.currentName ?? STAGE_LABELS[job.current_stage] ?? job.current_stage;
                     return (
                       <tr
                         key={job.id}
@@ -117,7 +156,7 @@ export default function Jobs() {
                         <td className="px-4 py-3 text-muted-foreground">{job.service_type || "—"}</td>
                         <td className="px-4 py-3">
                           <Badge variant="outline" className="text-xs">
-                            {STAGE_LABELS[job.current_stage]}
+                            {stageLabel}
                           </Badge>
                         </td>
                         <td className="px-4 py-3">
@@ -127,13 +166,17 @@ export default function Jobs() {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted">
+                            <div className="h-1.5 w-20 shrink-0 overflow-hidden rounded-full bg-muted">
                               <div
-                                className="h-full rounded-full bg-accent"
+                                className={`h-full rounded-full transition-all ${
+                                  pct === 100 ? "bg-success" : "bg-accent"
+                                }`}
                                 style={{ width: `${pct}%` }}
                               />
                             </div>
-                            <span className="text-xs text-muted-foreground">{pct}%</span>
+                            <span className="whitespace-nowrap text-xs text-muted-foreground">
+                              {pct}% · {done}/{total} steps
+                            </span>
                           </div>
                         </td>
                       </tr>

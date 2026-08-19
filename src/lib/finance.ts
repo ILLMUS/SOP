@@ -29,6 +29,8 @@ export interface FinanceDoc {
   /** Where the record came from: derived from stage data, or a stored external document. */
   source?: string;
   externalDocId?: string;
+  /** Sample/reference record, so it can be filtered out of real client data. */
+  isExample?: boolean;
 }
 
 export const EXPENSE_CATEGORIES = [
@@ -124,6 +126,7 @@ export function externalToDoc(d: ExternalDoc, jobs: Job[]): FinanceDoc {
     dueDate: d.due_date,
     source: d.source,
     externalDocId: d.id,
+    isExample: d.is_example,
   };
 }
 

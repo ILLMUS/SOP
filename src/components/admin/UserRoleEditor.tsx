@@ -17,24 +17,49 @@ interface UserRoleEditorProps {
   userName: string;
   currentRoles: AppRole[];
   onRolesUpdated: () => void;
+  orgRoles?: { id: string; name: string }[];
+  currentOrgRoleIds?: string[];
+  roleStages?: Record<string, string[]>;
+  workflowName?: string | null;
 }
 
 const ALL_ROLES = Object.keys(ROLE_LABELS) as AppRole[];
 
-export default function UserRoleEditor({ userId, userName, currentRoles, onRolesUpdated }: UserRoleEditorProps) {
+export default function UserRoleEditor({
+  userId,
+  userName,
+  currentRoles,
+  onRolesUpdated,
+  orgRoles = [],
+  currentOrgRoleIds = [],
+  roleStages = {},
+  workflowName,
+}: UserRoleEditorProps) {
   const { orgId } = useAuth();
   const [open, setOpen] = useState(false);
   const [selectedRoles, setSelectedRoles] = useState<AppRole[]>(currentRoles);
+  const [selectedOrgRoles, setSelectedOrgRoles] = useState<string[]>(currentOrgRoleIds);
+  const [showSystem, setShowSystem] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const handleOpen = (isOpen: boolean) => {
-    if (isOpen) setSelectedRoles(currentRoles);
+    if (isOpen) {
+      setSelectedRoles(currentRoles);
+      setSelectedOrgRoles(currentOrgRoleIds);
+      setShowSystem(false);
+    }
     setOpen(isOpen);
   };
 
   const toggleRole = (role: AppRole) => {
     setSelectedRoles((prev) =>
       prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
+    );
+  };
+
+  const toggleOrgRole = (id: string) => {
+    setSelectedOrgRoles((prev) =>
+      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
     );
   };
 
@@ -68,10 +93,34 @@ export default function UserRoleEditor({ userId, userName, currentRoles, onRoles
         if (addError) throw addError;
       }
 
+      // Workflow roles (defined by the selected SOP) live in user_org_roles
+      const orgToAdd = selectedOrgRoles.filter((r) => !currentOrgRoleIds.includes(r));
+      const orgToRemove = currentOrgRoleIds.filter((r) => !selectedOrgRoles.includes(r));
+
+      if (orgToRemove.length > 0) {
+        const { error } = await supabase
+          .from("user_org_roles")
+          .delete()
+          .eq("user_id", userId)
+          .eq("org_id", orgId)
+          .in("org_role_id", orgToRemove);
+        if (error) throw error;
+      }
+
+      if (orgToAdd.length > 0) {
+        const { error } = await supabase
+          .from("user_org_roles")
+          .insert(orgToAdd.map((org_role_id) => ({ user_id: userId, org_role_id, org_id: orgId })));
+        if (error) throw error;
+      }
+
       // Log role changes to audit trail
       const changes: string[] = [];
       if (toAdd.length > 0) changes.push(`Added: ${toAdd.map(r => ROLE_LABELS[r]).join(", ")}`);
       if (toRemove.length > 0) changes.push(`Removed: ${toRemove.map(r => ROLE_LABELS[r]).join(", ")}`);
+      const nameOf = (id: string) => orgRoles.find((r) => r.id === id)?.name ?? id;
+      if (orgToAdd.length > 0) changes.push(`Workflow roles added: ${orgToAdd.map(nameOf).join(", ")}`);
+      if (orgToRemove.length > 0) changes.push(`Workflow roles removed: ${orgToRemove.map(nameOf).join(", ")}`);
 
       if (changes.length > 0) {
         await supabase.from("audit_log").insert({
@@ -101,7 +150,9 @@ export default function UserRoleEditor({ userId, userName, currentRoles, onRoles
 
   const hasChanges =
     selectedRoles.length !== currentRoles.length ||
-    selectedRoles.some((r) => !currentRoles.includes(r));
+    selectedRoles.some((r) => !currentRoles.includes(r)) ||
+    selectedOrgRoles.length !== currentOrgRoleIds.length ||
+    selectedOrgRoles.some((r) => !currentOrgRoleIds.includes(r));
 
   return (
     <div className="flex items-center gap-2">
@@ -124,10 +175,55 @@ export default function UserRoleEditor({ userId, userName, currentRoles, onRoles
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent className="w-64 p-3" align="start">
+        <PopoverContent className="w-80 p-3" align="start">
           <p className="mb-2 text-xs font-medium text-muted-foreground">Edit roles for {userName}</p>
 
-          <div className="max-h-60 space-y-2 overflow-y-auto">
+          <div className="mb-2 border-b pb-2">
+            <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Workflow roles{workflowName ? ` — ${workflowName}` : ""}
+            </p>
+            {orgRoles.length === 0 ? (
+              <p className="text-xs text-muted-foreground">
+                No roles yet. Create them in Admin → Roles or in your SOP workflow.
+              </p>
+            ) : (
+              <div className="max-h-52 space-y-1 overflow-y-auto">
+                {orgRoles.map((r) => {
+                  const checked = selectedOrgRoles.includes(r.id);
+                  const steps = roleStages[r.id] || [];
+                  return (
+                    <div key={r.id} className="flex items-start gap-2 rounded-sm px-1 py-1 hover:bg-muted/60">
+                      <Checkbox
+                        className="mt-0.5"
+                        checked={checked}
+                        onCheckedChange={(c) => {
+                          if (Boolean(c) !== checked) toggleOrgRole(r.id);
+                        }}
+                      />
+                      <button type="button" onClick={() => toggleOrgRole(r.id)} className="flex-1 text-left">
+                        <span className="text-sm">{r.name}</span>
+                        {steps.length > 0 && (
+                          <span className="block text-[11px] text-muted-foreground">
+                            {steps.join(" · ")}
+                          </span>
+                        )}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowSystem((s) => !s)}
+            className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
+          >
+            {showSystem ? "Hide" : "Show"} system access levels
+          </button>
+
+          <div className={`max-h-48 space-y-2 overflow-y-auto ${showSystem ? "" : "hidden"}`}>
             {ALL_ROLES.map((role) => {
               const isChecked = selectedRoles.includes(role);
 
