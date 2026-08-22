@@ -62,11 +62,9 @@ Deno.serve(async (req) => {
     });
   }
 
- const url = new URL(req.url);
-
-const jobId =
-  url.searchParams.get("job_id") ||
-  url.pathname.split("/").filter(Boolean).at(-1);
+  const url = new URL(req.url);
+  const pathParts = url.pathname.split("/").filter(Boolean);
+  const jobId = pathParts[1] || url.searchParams.get("job_id");
 
   if (!jobId) {
     return new Response(JSON.stringify({ error: "job_id is required" }), {

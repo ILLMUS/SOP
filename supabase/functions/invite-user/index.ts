@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    const callerClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!, {
+    const callerClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: authHeader } },
     });
     const { data: { user: caller } } = await callerClient.auth.getUser();
@@ -37,31 +37,74 @@ Deno.serve(async (req) => {
       .in("role", ["super_admin", "owner_director"]).maybeSingle();
     if (!adminRole) throw new Error("Forbidden: organization admins only");
 
-    const { email, password, full_name, role } = await req.json();
-    if (!email || !password) throw new Error("Email and password are required");
+    const { email, password, full_name, role, org_role_id, redirect_to } = await req.json();
+    if (!email) throw new Error("Email is required");
 
-    const { data: created, error: createErr } = await admin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: { full_name: full_name || email },
-    });
-    if (createErr) throw createErr;
-    const newUserId = created.user!.id;
+    let newUserId: string | null = null;
+    let mode: "created" | "invited" | "linked" = "created";
 
-    await admin.from("profiles")
-      .update({ org_id: orgId, full_name: full_name || email })
-      .eq("id", newUserId);
+    // Is there already an account with this email?
+    const { data: existingProfile } = await admin
+      .from("profiles").select("id, org_id").ilike("email", email).maybeSingle();
+
+    if (existingProfile) {
+      newUserId = existingProfile.id;
+      mode = "linked";
+    } else if (password) {
+      const { data: created, error: createErr } = await admin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: { full_name: full_name || email },
+      });
+      if (createErr) throw createErr;
+      newUserId = created.user!.id;
+    } else {
+      const { data: invited, error: inviteErr } = await admin.auth.admin.inviteUserByEmail(email, {
+        data: { full_name: full_name || email },
+        redirectTo: redirect_to || undefined,
+      });
+      if (inviteErr) throw inviteErr;
+      newUserId = invited.user!.id;
+      mode = "invited";
+    }
+
+    // Only set the primary org when the user doesn't have one yet (multi-org members keep theirs)
+    const keepsOtherOrg = !!(existingProfile?.org_id && existingProfile.org_id !== orgId);
+    // Invited users have no profile row yet (the row is created on first sign-in), so upsert.
+    await admin.from("profiles").upsert(
+      {
+        id: newUserId,
+        email,
+        full_name: full_name || email,
+        ...(keepsOtherOrg ? {} : { org_id: orgId }),
+      },
+      { onConflict: "id" },
+    );
 
     await admin.from("organization_members")
       .upsert({ org_id: orgId, user_id: newUserId }, { onConflict: "org_id,user_id" });
 
     if (role) {
       await admin.from("user_roles")
-        .insert({ user_id: newUserId, org_id: orgId, role });
+        .upsert({ user_id: newUserId, org_id: orgId, role }, { onConflict: "user_id,org_id,role" });
     }
 
-    return new Response(JSON.stringify({ success: true, user_id: newUserId }), {
+    if (org_role_id) {
+      // Ensure the role belongs to the caller's organization
+      const { data: orgRole } = await admin
+        .from("org_roles").select("id").eq("id", org_role_id).eq("org_id", orgId).maybeSingle();
+      if (!orgRole) throw new Error("Invalid role for this organization");
+
+      const { data: already } = await admin.from("user_org_roles")
+        .select("id").eq("user_id", newUserId).eq("org_role_id", org_role_id).maybeSingle();
+      if (!already) {
+        await admin.from("user_org_roles")
+          .insert({ user_id: newUserId, org_id: orgId, org_role_id });
+      }
+    }
+
+    return new Response(JSON.stringify({ success: true, user_id: newUserId, mode }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err: any) {
