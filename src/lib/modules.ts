@@ -1,49 +1,44 @@
 import {
   LayoutDashboard,
-  Megaphone,
-  Handshake,
-  Factory,
-  Workflow,
-  Users,
-  Wallet,
-  BarChart3,
-  ShieldCheck,
-  Briefcase,
-  ClipboardList,
-  UserCog,
-  Settings,
-  FileText,
-  Receipt,
-  Building2,
-  Contact,
   Target,
-  Activity,
-  CheckSquare,
-  MessageSquare,
-  CalendarDays,
-  ClipboardCheck,
-  FileSignature,
+  Handshake,
   Percent,
-  Share2,
+  CheckSquare,
   LayoutList,
   GitBranch,
+  Briefcase,
   ListChecks,
-  BadgeCheck,
   Timer,
-  FormInput,
-  Files,
-  FileBarChart,
+  ClipboardCheck,
+  FileText,
+  Receipt,
   CreditCard,
   Banknote,
-  Package,
+  Users,
+  ClipboardList,
   LifeBuoy,
   Wrench,
-  Star,
+  BarChart3,
   Gauge,
-  History,
+  Activity,
+  UserCog,
   UsersRound,
+  Settings,
   Plug,
-  Rocket,
+  ShieldCheck,
+  Megaphone,
+  Building2,
+  Contact,
+  MessageSquare,
+  CalendarDays,
+  FileSignature,
+  Share2,
+  Package,
+  Files,
+  FormInput,
+  Workflow,
+  Factory,
+  Wallet,
   SlidersHorizontal,
 } from "lucide-react";
 
@@ -63,199 +58,717 @@ export interface ModuleGroup {
   children?: ModuleLink[];
 }
 
-/** A single row in the grouped sidebar navigation. */
+/**
+ * Live counters used by the sidebar.
+ */
+export type NavCount =
+  | "jobs"
+  | "approvals"
+  | "assignments"
+  | "overdue";
+
+/**
+ * A single navigation item.
+ */
 export interface NavItem {
   label: string;
   icon: React.ElementType;
   to: string;
   end?: boolean;
   adminOnly?: boolean;
-  /** Key of a live counter resolved by the sidebar (jobs, approvals, assignments...). */
-  count?: "jobs" | "approvals" | "assignments" | "overdue";
+  count?: NavCount;
 }
 
+/**
+ * Sidebar navigation section.
+ *
+ * Sections intentionally use business language rather than
+ * software/enterprise terminology.
+ */
 export interface NavSection {
-  /** Undefined for the top ungrouped block. */
   label?: string;
   items: NavItem[];
 }
 
 /**
- * Grouped Business OS navigation. Every entry points at a route that exists —
- * modules without a dedicated page yet resolve to their module hub.
+ * ============================================================
+ * HUSTLEOS SIDEBAR
+ * ============================================================
+ *
+ * COMMAND CENTER — What's happening?
+ * GROW            — Where is the next money coming from?
+ * OPERATE         — What work needs to get done?
+ * FINANCE         — What have we quoted, billed and collected?
+ * CLIENTS         — Who are we serving?
+ * INSIGHTS        — How are we performing?
+ *
+ * Administration is intentionally kept out of the main
+ * navigation. It belongs behind the user's profile/settings.
  */
 export const NAV_SECTIONS: NavSection[] = [
+
+  // ==========================================================
+  // COMMAND CENTER
+  // ==========================================================
   {
     items: [
-      { label: "Dashboard", icon: LayoutDashboard, to: "/dashboard", end: true },
-      { label: "My Work", icon: Rocket, to: "/jobs", count: "assignments" },
+      {
+        label: "Command Center",
+        icon: LayoutDashboard,
+        to: "/dashboard",
+        end: true,
+      },
     ],
   },
+
+  // ==========================================================
+  // GROW
+  // ==========================================================
   {
-    label: "Outreach & CRM",
+    label: "Grow",
     items: [
-      { label: "Prospects", icon: Target, to: "/crm/accounts" },
-      { label: "Accounts", icon: Building2, to: "/crm/accounts" },
-      { label: "Contacts", icon: Contact, to: "/crm/contacts" },
-      { label: "Lead Capture Forms", icon: Target, to: "/outreach/forms" },
-      { label: "Inbound Inbox", icon: Megaphone, to: "/outreach/inbox" },
-      { label: "Campaigns", icon: Megaphone, to: "/outreach/campaigns" },
-      { label: "Leads", icon: Handshake, to: "/crm/leads" },
-      { label: "Opportunities", icon: Percent, to: "/crm/opportunities" },
-      { label: "Activities", icon: Activity, to: "/crm/activities" },
-      { label: "Tasks & Follow-ups", icon: CheckSquare, to: "/crm/activities" },
-      { label: "Contact Timeline", icon: CalendarDays, to: "/outreach/timeline" },
-      { label: "Communications", icon: MessageSquare, to: "/outreach" },
-      { label: "Meetings", icon: CalendarDays, to: "/outreach" },
-      { label: "Proposals", icon: FileSignature, to: "/sales/proposals" },
-      { label: "Deals", icon: Handshake, to: "/crm/deals" },
-      { label: "Win / Loss Analytics", icon: Percent, to: "/sales/win-loss" },
-      { label: "Sales Forecast", icon: BarChart3, to: "/sales/forecast" },
-      { label: "Partners & Referrals", icon: Share2, to: "/outreach" },
-      { label: "Reports", icon: FileBarChart, to: "/admin/reports", adminOnly: true },
+      {
+        label: "Prospects",
+        icon: Target,
+        to: "/crm/accounts",
+      },
+      {
+        label: "Leads",
+        icon: Handshake,
+        to: "/crm/leads",
+      },
+      {
+        label: "Opportunities",
+        icon: Percent,
+        to: "/crm/opportunities",
+      },
+      {
+        label: "Deals",
+        icon: Handshake,
+        to: "/crm/deals",
+      },
+      {
+        label: "Follow-ups",
+        icon: CheckSquare,
+        to: "/crm/activities",
+      },
     ],
   },
+
+  // ==========================================================
+  // OPERATE
+  // ==========================================================
   {
-    label: "SOP & Operations",
+    label: "Operate",
     items: [
-      { label: "SOP Templates", icon: LayoutList, to: "/admin/sop", adminOnly: true },
-      { label: "Workflows", icon: GitBranch, to: "/admin/sop", adminOnly: true },
-      { label: "Jobs / Projects", icon: Briefcase, to: "/jobs" },
-      { label: "Job Pipeline", icon: Workflow, to: "/operations" },
-      { label: "My Assignments", icon: ListChecks, to: "/jobs", count: "assignments" },
-      { label: "Approvals", icon: BadgeCheck, to: "/operations", count: "approvals" },
-      { label: "SLA Monitor", icon: Timer, to: "/operations", count: "overdue" },
-      { label: "Forms", icon: FormInput, to: "/admin/sop", adminOnly: true },
-      { label: "Scheduling", icon: CalendarDays, to: "/operations/schedule" },
-      { label: "Team Allocation", icon: Users, to: "/operations/allocation" },
-      { label: "QC & Handover", icon: ClipboardCheck, to: "/operations/qc" },
-      { label: "Documents", icon: Files, to: "/operations" },
+      {
+        label: "SOP Templates",
+        icon: LayoutList,
+        to: "/admin/sop",
+        adminOnly: true,
+      },
+      {
+        label: "Workflows",
+        icon: GitBranch,
+        to: "/admin/sop",
+        adminOnly: true,
+      },
+      {
+        label: "Jobs",
+        icon: Briefcase,
+        to: "/jobs",
+        count: "jobs",
+      },
+      {
+        label: "My Assignments",
+        icon: ListChecks,
+        to: "/jobs",
+        count: "assignments",
+      },
+      {
+        label: "SLA Monitor",
+        icon: Timer,
+        to: "/operations",
+        count: "overdue",
+      },
+      {
+        label: "Quality Control",
+        icon: ClipboardCheck,
+        to: "/operations/qc",
+      },
+      {
+        label: "Scheduling",
+        icon: CalendarDays,
+        to: "/operations/schedule",
+      },
+      {
+        label: "Team Allocation",
+        icon: Users,
+        to: "/operations/allocation",
+      },
+      {
+        label: "Documents",
+        icon: Files,
+        to: "/operations",
+      },
     ],
   },
+
+  // ==========================================================
+  // FINANCE
+  // ==========================================================
   {
     label: "Finance",
     items: [
-      { label: "Quotes", icon: FileText, to: "/finance" },
-      { label: "Invoices", icon: Receipt, to: "/finance" },
-      { label: "Payments", icon: CreditCard, to: "/finance" },
-      { label: "Expenses", icon: Banknote, to: "/finance" },
-      { label: "Products & Services", icon: Package, to: "/finance" },
+      {
+        label: "Quotes",
+        icon: FileText,
+        to: "/finance",
+      },
+      {
+        label: "Invoices",
+        icon: Receipt,
+        to: "/finance",
+      },
+      {
+        label: "Payments",
+        icon: CreditCard,
+        to: "/finance",
+      },
+      {
+        label: "Expenses",
+        icon: Banknote,
+        to: "/finance",
+      },
+      {
+        label: "Products & Services",
+        icon: Package,
+        to: "/finance",
+      },
     ],
   },
+
+  // ==========================================================
+  // CLIENTS
+  // ==========================================================
   {
-    label: "Customer Success",
+    label: "Clients",
     items: [
-      { label: "Clients", icon: Users, to: "/crm/accounts" },
-      { label: "Client Portal Access", icon: ClipboardList, to: "/clients/portal" },
-      { label: "Support Tickets", icon: LifeBuoy, to: "/clients/tickets" },
-      { label: "Renewals & Maintenance", icon: Wrench, to: "/clients/reminders" },
-      { label: "Feedback", icon: Star, to: "/clients/feedback" },
+      {
+        label: "Clients",
+        icon: Users,
+        to: "/crm/accounts",
+      },
+      {
+        label: "Contacts",
+        icon: Contact,
+        to: "/crm/contacts",
+      },
+      {
+        label: "Client Portal",
+        icon: ClipboardList,
+        to: "/clients/portal",
+      },
+      {
+        label: "Support",
+        icon: LifeBuoy,
+        to: "/clients/tickets",
+      },
+      {
+        label: "Renewals",
+        icon: Wrench,
+        to: "/clients/reminders",
+      },
+      {
+        label: "Feedback",
+        icon: Handshake,
+        to: "/clients/feedback",
+      },
     ],
   },
+
+  // ==========================================================
+  // INSIGHTS
+  // ==========================================================
   {
-    label: "Management",
+    label: "Insights",
     items: [
-      { label: "Reports & Analytics", icon: BarChart3, to: "/reports" },
-      { label: "Performance", icon: Gauge, to: "/reports" },
-      { label: "Audit Trail", icon: History, to: "/admin/reports", adminOnly: true },
+      {
+        label: "Reports",
+        icon: BarChart3,
+        to: "/reports",
+      },
+      {
+        label: "Performance",
+        icon: Gauge,
+        to: "/reports",
+      },
+      {
+        label: "Activity",
+        icon: Activity,
+        to: "/crm/activities",
+      },
     ],
   },
+
+  // ==========================================================
+  // ADMINISTRATION
+  // ==========================================================
+  //
+  // Kept available to the sidebar implementation, but only
+  // exposed to administrators.
+  //
+  // If you want an ultra-clean HUSTLEOS sidebar, these can
+  // later be moved completely into the profile menu.
+  //
   {
     label: "Administration",
     items: [
-      { label: "Users & Roles", icon: UserCog, to: "/admin/users", adminOnly: true },
-      { label: "Teams", icon: UsersRound, to: "/admin/roles", adminOnly: true },
-      { label: "Business Configuration", icon: SlidersHorizontal, to: "/admin/configuration", adminOnly: true },
-      { label: "Settings", icon: Settings, to: "/settings" },
-      { label: "Integrations", icon: Plug, to: "/admin/integrations", adminOnly: true },
+      {
+        label: "Users & Roles",
+        icon: UserCog,
+        to: "/admin/users",
+        adminOnly: true,
+      },
+      {
+        label: "Teams",
+        icon: UsersRound,
+        to: "/admin/roles",
+        adminOnly: true,
+      },
+      {
+        label: "Business Settings",
+        icon: SlidersHorizontal,
+        to: "/admin/configuration",
+        adminOnly: true,
+      },
+      {
+        label: "Integrations",
+        icon: Plug,
+        to: "/admin/integrations",
+        adminOnly: true,
+      },
+      {
+        label: "Audit Trail",
+        icon: ShieldCheck,
+        to: "/admin/reports",
+        adminOnly: true,
+      },
+      {
+        label: "Settings",
+        icon: Settings,
+        to: "/settings",
+      },
     ],
   },
 ];
 
-/** Page titles + subtitles used by the app header, longest match wins. */
-export const ROUTE_TITLES: { path: string; title: string; subtitle: string }[] = [
-  { path: "/dashboard", title: "Dashboard", subtitle: "Here's what's happening across your workspace." },
-  { path: "/jobs/new", title: "New Job", subtitle: "Start a work item from one of your workflows." },
-  { path: "/jobs", title: "Jobs / Projects", subtitle: "Every work item running through your SOP engine." },
-  { path: "/crm/accounts", title: "Accounts & Prospects", subtitle: "Prospect to client, in one place." },
-  { path: "/crm/contacts", title: "Contacts", subtitle: "People linked to their accounts." },
-  { path: "/crm/leads", title: "Leads", subtitle: "Qualify enquiries and convert them." },
-  { path: "/crm/opportunities", title: "Opportunities", subtitle: "Qualified work in play." },
-  { path: "/crm/deals", title: "Deals", subtitle: "Close deals and start the work." },
-  { path: "/crm/activities", title: "Activities & Follow-ups", subtitle: "Calls, meetings, notes and tasks." },
-  { path: "/outreach", title: "Outreach & CRM", subtitle: "Prospects, campaigns and follow-ups." },
-  { path: "/sales/win-loss", title: "Win / Loss Analytics", subtitle: "Why deals close and why they slip away." },
-  { path: "/sales/forecast", title: "Sales Forecast", subtitle: "Pipeline value weighted by probability." },
-  { path: "/sales/proposals", title: "Proposal Templates", subtitle: "Reusable proposal wording for your team." },
-  { path: "/sales", title: "Sales", subtitle: "Leads, opportunities and proposals." },
-  { path: "/operations/schedule", title: "Capacity & Scheduling", subtitle: "Workload calendar by SLA due date." },
-  { path: "/operations/allocation", title: "Team Allocation", subtitle: "Who owns each live step." },
-  { path: "/operations/qc", title: "QC & Handover", subtitle: "Quality sign-off and handover packs." },
-  { path: "/operations", title: "Operations", subtitle: "Pipeline, SLAs and delivery." },
-  { path: "/clients", title: "Clients", subtitle: "Accounts, onboarding and support." },
-  { path: "/clients/portal", title: "Client Portal Access", subtitle: "Private job tracking links for clients." },
-  { path: "/clients/tickets", title: "Support Tickets", subtitle: "Issues, warranty calls and requests." },
-  { path: "/clients/feedback", title: "Client Feedback", subtitle: "Ratings, reviews and complaints." },
-  { path: "/clients/reminders", title: "Renewals & Maintenance", subtitle: "Recurring service and contract reminders." },
-  { path: "/finance", title: "Finance", subtitle: "Quotes, invoices and payments." },
-  { path: "/admin/sop", title: "SOP Builder", subtitle: "Design the workflows your business runs on." },
-  { path: "/admin/roles", title: "Roles & Teams", subtitle: "Who is responsible for each stage." },
-  { path: "/admin/configuration", title: "Business Configuration", subtitle: "Define how your Business OS operates." },
-  { path: "/admin/integrations", title: "Integration Center", subtitle: "Connect your workspace to external tools and services." },
-  { path: "/admin/users", title: "Users & Roles", subtitle: "Manage workspace access." },
-  { path: "/admin/assignments", title: "Stage Assignments", subtitle: "Legacy stage ownership defaults." },
-  { path: "/admin/reports", title: "Reports & Analytics", subtitle: "Performance across the operation." },
-  { path: "/reports", title: "Reports & Analytics", subtitle: "Performance across the operation." },
-  { path: "/settings", title: "Settings", subtitle: "Profile, appearance, notifications and admin." },
+/**
+ * ============================================================
+ * ROUTE TITLES
+ * ============================================================
+ */
+
+export const ROUTE_TITLES: {
+  path: string;
+  title: string;
+  subtitle: string;
+}[] = [
+
+  // ----------------------------------------------------------
+  // COMMAND CENTER
+  // ----------------------------------------------------------
+  {
+    path: "/dashboard",
+    title: "Command Center",
+    subtitle: "What's happening across your business.",
+  },
+
+  // ----------------------------------------------------------
+  // GROW
+  // ----------------------------------------------------------
+  {
+    path: "/crm/accounts",
+    title: "Prospects",
+    subtitle: "Businesses and people you could be doing business with.",
+  },
+  {
+    path: "/crm/contacts",
+    title: "Contacts",
+    subtitle: "The people behind your prospects, clients and deals.",
+  },
+  {
+    path: "/crm/leads",
+    title: "Leads",
+    subtitle: "Turn enquiries into real business opportunities.",
+  },
+  {
+    path: "/crm/opportunities",
+    title: "Opportunities",
+    subtitle: "Business currently in play.",
+  },
+  {
+    path: "/crm/deals",
+    title: "Deals",
+    subtitle: "Track the business you're working to close.",
+  },
+  {
+    path: "/crm/activities",
+    title: "Follow-ups",
+    subtitle: "Calls, meetings, tasks and the next action.",
+  },
+  {
+    path: "/outreach",
+    title: "Grow",
+    subtitle: "Build relationships and create new business.",
+  },
+  {
+    path: "/sales/win-loss",
+    title: "Win / Loss",
+    subtitle: "Understand why business is won or lost.",
+  },
+  {
+    path: "/sales/forecast",
+    title: "Sales Forecast",
+    subtitle: "See the value of business currently in your pipeline.",
+  },
+  {
+    path: "/sales/proposals",
+    title: "Proposals",
+    subtitle: "Prepare proposals that move opportunities forward.",
+  },
+
+  // ----------------------------------------------------------
+  // OPERATE
+  // ----------------------------------------------------------
+  {
+    path: "/jobs/new",
+    title: "New Job",
+    subtitle: "Start work from one of your business workflows.",
+  },
+  {
+    path: "/jobs",
+    title: "Jobs",
+    subtitle: "Everything your business is currently working on.",
+  },
+  {
+    path: "/operations/schedule",
+    title: "Scheduling",
+    subtitle: "Plan work around deadlines and available capacity.",
+  },
+  {
+    path: "/operations/allocation",
+    title: "Team Allocation",
+    subtitle: "Make sure every job has an owner.",
+  },
+  {
+    path: "/operations/qc",
+    title: "Quality Control",
+    subtitle: "Check work before it moves to the next stage.",
+  },
+  {
+    path: "/operations",
+    title: "Operations",
+    subtitle: "Monitor the work moving through your business.",
+  },
+  {
+    path: "/admin/sop",
+    title: "SOP Templates",
+    subtitle: "Build the processes your business runs on.",
+  },
+  {
+    path: "/admin/roles",
+    title: "Roles & Teams",
+    subtitle: "Define who is responsible for each part of the work.",
+  },
+
+  // ----------------------------------------------------------
+  // FINANCE
+  // ----------------------------------------------------------
+  {
+    path: "/finance",
+    title: "Finance",
+    subtitle: "What have we quoted, billed and collected?",
+  },
+
+  // ----------------------------------------------------------
+  // CLIENTS
+  // ----------------------------------------------------------
+  {
+    path: "/clients",
+    title: "Clients",
+    subtitle: "The people and businesses you serve.",
+  },
+  {
+    path: "/clients/portal",
+    title: "Client Portal",
+    subtitle: "Give clients visibility into their work.",
+  },
+  {
+    path: "/clients/tickets",
+    title: "Support",
+    subtitle: "Manage client issues, requests and support.",
+  },
+  {
+    path: "/clients/feedback",
+    title: "Feedback",
+    subtitle: "Learn what clients think about your service.",
+  },
+  {
+    path: "/clients/reminders",
+    title: "Renewals",
+    subtitle: "Keep recurring work and maintenance from being forgotten.",
+  },
+
+  // ----------------------------------------------------------
+  // INSIGHTS
+  // ----------------------------------------------------------
+  {
+    path: "/reports",
+    title: "Reports",
+    subtitle: "Understand what's happening across your business.",
+  },
+  {
+    path: "/admin/reports",
+    title: "Reports & Analytics",
+    subtitle: "Performance across your business.",
+  },
+
+  // ----------------------------------------------------------
+  // ADMINISTRATION
+  // ----------------------------------------------------------
+  {
+    path: "/admin/users",
+    title: "Users & Roles",
+    subtitle: "Control who has access to your business.",
+  },
+  {
+    path: "/admin/configuration",
+    title: "Business Settings",
+    subtitle: "Configure how HUSTLEOS works for your business.",
+  },
+  {
+    path: "/admin/integrations",
+    title: "Integrations",
+    subtitle: "Connect HUSTLEOS with the tools you use.",
+  },
+  {
+    path: "/settings",
+    title: "Settings",
+    subtitle: "Manage your profile and application preferences.",
+  },
 ];
 
-/** Business OS module map. Existing pages are wired in rather than duplicated. */
+/**
+ * ============================================================
+ * BUSINESS OS MODULE MAP
+ * ============================================================
+ *
+ * Kept for existing parts of the application that consume
+ * MODULES rather than NAV_SECTIONS.
+ */
 export const MODULES: ModuleGroup[] = [
-  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" },
-  { key: "outreach", label: "Outreach", icon: Megaphone, to: "/outreach" },
-  { key: "sales", label: "Sales", icon: Handshake, to: "/sales" },
+
   {
-    key: "operations",
-    label: "Operations",
+    key: "dashboard",
+    label: "Command Center",
+    icon: LayoutDashboard,
+    to: "/dashboard",
+  },
+
+  {
+    key: "grow",
+    label: "Grow",
+    icon: Target,
+    to: "/outreach",
+    children: [
+      {
+        to: "/crm/accounts",
+        label: "Prospects",
+        icon: Target,
+      },
+      {
+        to: "/crm/leads",
+        label: "Leads",
+        icon: Handshake,
+      },
+      {
+        to: "/crm/opportunities",
+        label: "Opportunities",
+        icon: Percent,
+      },
+      {
+        to: "/crm/deals",
+        label: "Deals",
+        icon: Handshake,
+      },
+      {
+        to: "/crm/activities",
+        label: "Follow-ups",
+        icon: CheckSquare,
+      },
+    ],
+  },
+
+  {
+    key: "operate",
+    label: "Operate",
     icon: Factory,
     to: "/operations",
     children: [
-      { to: "/jobs", label: "Jobs", icon: Briefcase },
-      { to: "/admin/assignments", label: "Legacy Stages", icon: ClipboardList, adminOnly: true },
+      {
+        to: "/admin/sop",
+        label: "SOP Templates",
+        icon: LayoutList,
+        adminOnly: true,
+      },
+      {
+        to: "/admin/sop",
+        label: "Workflows",
+        icon: GitBranch,
+        adminOnly: true,
+      },
+      {
+        to: "/jobs",
+        label: "Jobs",
+        icon: Briefcase,
+      },
+      {
+        to: "/jobs",
+        label: "My Assignments",
+        icon: ListChecks,
+      },
+      {
+        to: "/operations",
+        label: "SLA Monitor",
+        icon: Timer,
+      },
+      {
+        to: "/operations/qc",
+        label: "Quality Control",
+        icon: ClipboardCheck,
+      },
     ],
   },
-  {
-    key: "sop",
-    label: "SOP",
-    icon: Workflow,
-    to: "/admin/sop",
-    adminOnly: true,
-    children: [
-      { to: "/admin/sop", label: "SOP Builder", icon: Workflow, adminOnly: true },
-      { to: "/admin/roles", label: "Roles", icon: UserCog, adminOnly: true },
-    ],
-  },
-  { key: "clients", label: "Clients", icon: Users, to: "/clients" },
+
   {
     key: "finance",
     label: "Finance",
     icon: Wallet,
     to: "/finance",
     children: [
-      { to: "/finance", label: "Overview", icon: Receipt },
+      {
+        to: "/finance",
+        label: "Quotes",
+        icon: FileText,
+      },
+      {
+        to: "/finance",
+        label: "Invoices",
+        icon: Receipt,
+      },
+      {
+        to: "/finance",
+        label: "Payments",
+        icon: CreditCard,
+      },
+      {
+        to: "/finance",
+        label: "Expenses",
+        icon: Banknote,
+      },
     ],
   },
-  { key: "reporting", label: "Reporting", icon: BarChart3, to: "/admin/reports", adminOnly: true },
+
   {
-    key: "admin",
-    label: "Admin",
+    key: "clients",
+    label: "Clients",
+    icon: Users,
+    to: "/clients",
+    children: [
+      {
+        to: "/crm/accounts",
+        label: "Clients",
+        icon: Users,
+      },
+      {
+        to: "/clients/portal",
+        label: "Client Portal",
+        icon: ClipboardList,
+      },
+      {
+        to: "/clients/tickets",
+        label: "Support",
+        icon: LifeBuoy,
+      },
+      {
+        to: "/clients/reminders",
+        label: "Renewals",
+        icon: Wrench,
+      },
+    ],
+  },
+
+  {
+    key: "insights",
+    label: "Insights",
+    icon: BarChart3,
+    to: "/reports",
+    children: [
+      {
+        to: "/reports",
+        label: "Reports",
+        icon: BarChart3,
+      },
+      {
+        to: "/reports",
+        label: "Performance",
+        icon: Gauge,
+      },
+      {
+        to: "/crm/activities",
+        label: "Activity",
+        icon: Activity,
+      },
+    ],
+  },
+
+  {
+    key: "administration",
+    label: "Administration",
     icon: ShieldCheck,
     to: "/admin/users",
     adminOnly: true,
     children: [
-      { to: "/admin/users", label: "User Management", icon: Users, adminOnly: true },
-      { to: "/settings", label: "Settings", icon: Settings },
-      { to: "/admin/reports", label: "Reports", icon: FileText, adminOnly: true },
+      {
+        to: "/admin/users",
+        label: "Users & Roles",
+        icon: UserCog,
+        adminOnly: true,
+      },
+      {
+        to: "/admin/roles",
+        label: "Teams",
+        icon: UsersRound,
+        adminOnly: true,
+      },
+      {
+        to: "/admin/configuration",
+        label: "Business Settings",
+        icon: SlidersHorizontal,
+        adminOnly: true,
+      },
+      {
+        to: "/admin/integrations",
+        label: "Integrations",
+        icon: Plug,
+        adminOnly: true,
+      },
+      {
+        to: "/settings",
+        label: "Settings",
+        icon: Settings,
+      },
     ],
   },
 ];

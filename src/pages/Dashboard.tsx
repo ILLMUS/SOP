@@ -337,11 +337,11 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-4 pb-2">
+    <div className="space-y-3 pb-2">
       {isSuperAdmin && (
         <div className="flex justify-end">
-          <Button onClick={() => navigate("/jobs/new")} className="rounded-xl">
-            <Plus className="mr-2 h-4 w-4" />
+          <Button onClick={() => navigate("/jobs/new")} className="rounded-xl h-9 px-3 text-sm">
+            <Plus className="mr-1.5 h-4 w-4" />
             New Job
           </Button>
         </div>
@@ -349,13 +349,13 @@ export default function Dashboard() {
 
       <KpiCards items={model.kpis} />
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)_minmax(0,1fr)]">
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)_minmax(0,1fr)]">
         <PipelineFunnel rows={model.funnel} pipelineValue={model.pipelineValue} />
         <JobPipelineBoard columns={model.columns} />
         <MyAssignments rows={model.assignments} />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
         <DonutStat
           title="SLA Performance"
           pill="All Workflows"
@@ -377,12 +377,12 @@ export default function Dashboard() {
         <RecentActivityPanel rows={activity} />
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <RevenueOverview data={model.monthly} currency={CUR} />
         <WorkflowPerformance rows={model.workflows} />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-3 lg:grid-cols-2">
         <PendingApprovalsQueue />
         {isAdmin && <OverdueStagesWidget />}
       </div>
